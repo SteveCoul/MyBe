@@ -69,3 +69,9 @@ unsigned int PAT::numPrograms() {
 	return m_pmt_pids.size();
 }
 
+unsigned int PAT::pmtPID( unsigned int offset ) {
+	if ( ( !m_valid ) || ( offset >= m_pmt_pids.size() ) ) return 0;	/* 0 is invalid for PMT because PAT is always on PID 0 */
+	return m_pmt_pids.at( offset );
+}
+
+

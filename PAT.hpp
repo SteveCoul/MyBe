@@ -12,6 +12,7 @@ public:
 	bool isvalid();
 	void dump();
 	unsigned int numPrograms();
+	unsigned int pmtPID( unsigned int offset );
 private:
 	const uint8_t* m_data;
 	size_t			m_len;
