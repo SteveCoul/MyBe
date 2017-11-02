@@ -49,8 +49,8 @@ const uint8_t* TSPacket::getPayload( size_t* p_size ) {
 		p = NULL;
 		l = 0;
 	} else {
-		const uint8_t* p = m_raw_data + 4;
-		size_t l = 184;
+		p = m_raw_data + 4;
+		l = 184;
 
 		if ( hasAdaptation() ) {
 			uint8_t field_len = p[0] + 1;
