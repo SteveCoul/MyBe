@@ -53,8 +53,9 @@ int main( int argc, char** argv ) {
 						if ( pat.isvalid() == false ) {
 							XLOG_ERROR( "Invalid PAT" );
 							ret = 6;
+						} else if ( pat.numPrograms() != 1 ) {
+							XLOG_ERROR( "PAT should of had 1 single program at instead it returned %u", pat.numPrograms() );
 						} else {
-							pat.dump();
 						}
 					}
 				}
