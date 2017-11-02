@@ -80,6 +80,11 @@ int main( int argc, char** argv ) {
 									} else {
 										unsigned int video_pid = pmt.getPidFirstOfType( 27 );
 										XLOG_INFO( "Video Stream is on Pid %d", video_pid );
+
+										unsigned int alternate_pid = ts.getUnusedPID( 256 );
+										XLOG_INFO( "Well put the magic alternate stream on PID %d", alternate_pid );
+										/* FIXME really it needs to be an unused pid that is NOT in the PMT just to guard
+										   against PMT referencing PIDS not in the transport */
 									}
 								}
 							}

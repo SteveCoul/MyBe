@@ -23,6 +23,7 @@ public:
 	TS( const void* data, size_t length );
 	~TS();
 	Stream* stream( int pid );
+	unsigned int getUnusedPID( int lowest = 0);
 private:
 	std::vector<TSPacket*>	m_packets;
 	std::vector<TSPacket*>	m_packets_by_pid[ 8192 ];

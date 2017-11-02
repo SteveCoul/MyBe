@@ -44,3 +44,13 @@ TSPacket* TS::Stream::packet( unsigned int offset ) {
 	return m_packets->at( offset );
 }
 
+unsigned int TS::getUnusedPID( int lowest ) {
+	unsigned int rc = 0;
+	for ( unsigned i = lowest; i < 8192; i++ ) 
+		if ( m_packets_by_pid[i].size() == 0 ) {
+			rc = i;
+			break;
+		}
+	return rc;
+}
+
