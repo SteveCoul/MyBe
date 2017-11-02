@@ -121,6 +121,15 @@ int main( int argc, char** argv ) {
 												ts.writePIDStream( ofd, alternate_pid );	// FIXME don't write 1st Iframe
 												ts.writePIDStream( ofd, video_pid );		// FIXME don't write 1st Iframe 
 												(void)close( ofd );
+
+												if ( opts.saveVideos() ) {
+													ofd = open( "tmp_original.ts", O_WRONLY | O_CREAT | O_TRUNC, 0666 );
+													ts.writePIDStream( ofd, video_pid );
+													(void)close( ofd );
+													ofd = open( "tmp_new.ts", O_WRONLY | O_CREAT | O_TRUNC, 0666 );
+													ts.writePIDStream( ofd, alternate_pid );
+													(void)close( ofd );
+												}
 											}
 										}
 									}

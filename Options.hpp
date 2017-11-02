@@ -23,6 +23,7 @@ public:
 
 	std::string source() { return m_source_filename; }
 	std::string dest() { return m_dest_filename; }
+	bool saveVideos() { return m_save_videos; }
 
 private:
 	int parse( int argc, char** argv );
@@ -32,6 +33,7 @@ private:
 private:
 	std::string		m_source_filename;
 	std::string		m_dest_filename;
+	bool			m_save_videos;
 };
 
 #endif
