@@ -11,6 +11,12 @@
 #include "TS.hpp"
 #include "xlog.hpp"
 
+static
+int makeAlternateVideo( TS* ts, unsigned int video_pid, unsigned int alternate_pid ) {
+	XLOG_WARNING("not implemented");
+	return 0;
+}
+
 int main( int argc, char** argv ) {
 	xlog::init( argv[0] );
 
@@ -56,8 +62,9 @@ int main( int argc, char** argv ) {
 							ret = 6;
 						} else if ( pat.numPrograms() != 1 ) {
 							XLOG_ERROR( "PAT should of had 1 single program at instead it returned %u", pat.numPrograms() );
-						} else {
-							TS::Stream* pmt_stream = ts.stream( pat.pmtPID(0) );
+						} else {	
+							unsigned int pmt_pid = pat.pmtPID(0); 
+							TS::Stream* pmt_stream = ts.stream( pmt_pid );
 							if ( ( pmt_stream == NULL )  || ( pmt_stream->numPackets() == 0 ) ) {
 								XLOG_ERROR( "PMT not found" );
 								ret = 7;
@@ -85,6 +92,37 @@ int main( int argc, char** argv ) {
 										XLOG_INFO( "Well put the magic alternate stream on PID %d", alternate_pid );
 										/* FIXME really it needs to be an unused pid that is NOT in the PMT just to guard
 										   against PMT referencing PIDS not in the transport */
+
+										if ( makeAlternateVideo( &ts, video_pid, alternate_pid ) != 0 ) {
+											XLOG_ERROR( "Failed to make alternate video track" );
+											ret = 11;
+										} else {
+											/* Now we write our new output stream,
+												PAT
+												PMT
+												Anything other than magic or video
+												Enough video for first IFrame
+												magic
+												video */
+											int ofd = open( opts.dest().c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666 );
+											if ( ofd < 0 ) {
+												XLOG_ERROR( "Failed to open dest %s [ %s ]", opts.dest().c_str(), strerror(errno) );
+												ret = 12;
+											} else {
+												ts.writePIDStream( ofd, 0 );
+												ts.writePIDStream( ofd, pmt_pid );
+												for ( unsigned int i = 0; i < 8192; i++ ) 
+													if ( ( i != 0 ) && ( i != pmt_pid ) && ( i != video_pid ) && ( i != alternate_pid ) )
+														ts.writePIDStream( ofd, i );
+
+												/* The FIXMEs below are to do with sharing the first Iframe instead of duplicating it */
+
+												// FIXME need to write the first IFrames worth of video 
+												ts.writePIDStream( ofd, alternate_pid );	// FIXME don't write 1st Iframe
+												ts.writePIDStream( ofd, video_pid );		// FIXME don't write 1st Iframe 
+												(void)close( ofd );
+											}
+										}
 									}
 								}
 							}
