@@ -6,7 +6,7 @@
 #include <sys/mman.h>
 
 #include "Options.hpp"
-#include "TSStream.hpp"
+#include "TS.hpp"
 #include "xlog.hpp"
 
 int main( int argc, char** argv ) {
@@ -32,7 +32,7 @@ int main( int argc, char** argv ) {
 			} else {
 				XLOG_INFO( "Source is %ld bytes", len );
 
-				TSStream ts( ptr, len );
+				TS ts( ptr, len );
 
 				(void)munmap( ptr, len );
 			}

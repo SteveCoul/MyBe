@@ -1,9 +1,9 @@
 
-#include "TSStream.hpp"
+#include "TS.hpp"
 
 #include "xlog.hpp"
 
-TSStream::TSStream( const void* data, size_t length ) {
+TS::TS( const void* data, size_t length ) {
 	while ( length >= 188 ) {
 		TSPacket* pkt = new TSPacket( data, 188 );
 		if ( pkt->isvalid()	== false ) {
@@ -22,7 +22,7 @@ TSStream::TSStream( const void* data, size_t length ) {
 		XLOG_WARNING( "Excess of data at end of stream" );
 }
 
-TSStream::~TSStream() {
+TS::~TS() {
 	for ( std::vector<TSPacket*>::const_iterator it = m_packets.begin(); it != m_packets.end(); ++it )
 		delete *it;
 }

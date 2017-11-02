@@ -4,7 +4,7 @@ THIRD_PARTY=$(PWD)/3rdParty
 # ---------------
 
 all: ffmpeg
-	$(CXX) -I. -o recode main.cpp xlog.cpp TSPacket.cpp TSStream.cpp Options.cpp
+	$(CXX) -I. -o recode main.cpp xlog.cpp TS.cpp TSPacket.cpp Options.cpp
 
 clean: clean_deps
 	rm -rf $(THIRD_PARTY)

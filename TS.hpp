@@ -1,5 +1,5 @@
-#ifndef __TSStream_hpp__
-#define __TSStream_hpp__
+#ifndef __TS_hpp__
+#define __TS_hpp__
 
 #include <stddef.h>
 
@@ -7,10 +7,10 @@
 
 #include "TSPacket.hpp"
 
-class TSStream {
+class TS {
 public:
-	TSStream( const void* data, size_t length );
-	~TSStream();
+	TS( const void* data, size_t length );
+	~TS();
 private:
 	std::vector<TSPacket*>	m_packets;
 	std::vector<TSPacket*>	m_packets_by_pid[ 8192 ];
