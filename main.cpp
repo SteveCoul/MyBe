@@ -6,6 +6,7 @@
 #include <sys/mman.h>
 
 #include "Options.hpp"
+#include "PAT.hpp"
 #include "TS.hpp"
 #include "xlog.hpp"
 
@@ -39,6 +40,23 @@ int main( int argc, char** argv ) {
 					XLOG_ERROR( "No PAT found" );
 					ret = 4;
 				} else {
+					/* FIXME - we need an API for TS::Stream to get the next complete section,
+					   for now, I'm only worrying about PATs that fit in a single frame */
+					TSPacket* pat_packet = pat_stream->packet(0);
+					if ( pat_packet->pusi() == 0 ) {
+						XLOG_ERROR( "First PAT TS Frame does not have PUSI set" );
+						ret = 5;
+					} else {
+						size_t pat_len;
+						const uint8_t* pat_ptr = pat_packet->getPayload( &pat_len );
+						PAT pat( pat_ptr, pat_len );
+						if ( pat.isvalid() == false ) {
+							XLOG_ERROR( "Invalid PAT" );
+							ret = 6;
+						} else {
+							pat.dump();
+						}
+					}
 				}
 
 				(void)munmap( ptr, len );
