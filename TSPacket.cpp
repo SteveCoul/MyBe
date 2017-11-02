@@ -2,6 +2,7 @@
 #include "TSPacket.hpp"
 
 #include <string.h>
+#include <unistd.h>
 
 #include "xlog.hpp"
 
@@ -61,5 +62,9 @@ const uint8_t* TSPacket::getPayload( size_t* p_size ) {
 
 	if ( p_size ) p_size[0] = l;
 	return p;
+}
+
+int TSPacket::write( int fd ) {
+	return ::write( fd, m_raw_data, 188 );
 }
 

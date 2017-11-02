@@ -15,6 +15,7 @@ public:
 	bool hasPayload();
 	bool hasAdaptation();
 	const uint8_t* getPayload( size_t* p_size );
+	int write( int fd );
 private:
 	bool			m_copied;
 	uint8_t*		m_copy_data;
