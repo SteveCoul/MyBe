@@ -13,7 +13,7 @@ public:
 	friend class TS;
 	public:
 		unsigned int numPackets();
-		TSPacket* packet( unsigned int offset );
+		TSPacket* packet( unsigned int offset );	/* returned packet is owned by TS */
 	protected:
 		Stream( std::vector<TSPacket*>* p ) { m_packets = p; }
 	private:
