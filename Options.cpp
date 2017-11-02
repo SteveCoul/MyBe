@@ -13,5 +13,6 @@ void Options::erase() {
 
 void Options::setDefault() {
 	m_source_filename = "input.ts";
+	m_dest_filename = "output.ts";
 }
 

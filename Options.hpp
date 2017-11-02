@@ -22,6 +22,7 @@ public:
 	}
 
 	std::string source() { return m_source_filename; }
+	std::string dest() { return m_dest_filename; }
 
 private:
 	int parse( int argc, char** argv );
@@ -30,6 +31,7 @@ private:
 
 private:
 	std::string		m_source_filename;
+	std::string		m_dest_filename;
 };
 
 #endif
