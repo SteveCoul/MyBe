@@ -56,6 +56,22 @@ int main( int argc, char** argv ) {
 						} else if ( pat.numPrograms() != 1 ) {
 							XLOG_ERROR( "PAT should of had 1 single program at instead it returned %u", pat.numPrograms() );
 						} else {
+							TS::Stream* pmt_stream = ts.stream( pat.pmtPID(0) );
+							if ( ( pmt_stream == NULL )  || ( pmt_stream->numPackets() == 0 ) ) {
+								XLOG_ERROR( "PMT not found" );
+								ret = 7;
+							} else {
+								/* FIXME as with PAT above, assuming a single frame for a PMT */
+								TSPacket* pmt_packet = pmt_stream->packet(0);
+								if ( pmt_packet->pusi() == 0 ) {
+									XLOG_ERROR( "First PMT TS Frame does not have PUSI set" );
+									ret = 5;
+								} else {
+									size_t pmt_len;
+									const uint8_t* pmt_ptr = pmt_packet->getPayload( &pmt_len );
+									XLOG_HEXDUMP_INFO( pmt_ptr, pmt_len );
+								}
+							}
 						}
 					}
 				}
