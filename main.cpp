@@ -29,10 +29,17 @@ int main( int argc, char** argv ) {
 			void* ptr = mmap( NULL, len, PROT_READ, MAP_SHARED, fd, 0 );
 			if ( ptr == (void*)MAP_FAILED ) {
 				XLOG_ERROR( "Failed to map source into memory [%s]", strerror(errno) );
+				ret = 3;
 			} else {
 				XLOG_INFO( "Source is %ld bytes", len );
 
 				TS ts( ptr, len );
+				TS::Stream* pat_stream = ts.stream( 0 );
+				if ( ( pat_stream == NULL ) || ( pat_stream->numPackets() == 0 ) ) {
+					XLOG_ERROR( "No PAT found" );
+					ret = 4;
+				} else {
+				}
 
 				(void)munmap( ptr, len );
 			}
