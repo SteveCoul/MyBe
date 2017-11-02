@@ -54,3 +54,9 @@ unsigned int TS::getUnusedPID( int lowest ) {
 	return rc;
 }
 
+int TS::writePIDStream( int fd, unsigned pid ) {
+	for ( std::vector<TSPacket*>::const_iterator it = m_packets_by_pid[pid].begin(); it != m_packets_by_pid[pid].end(); ++it )
+		(*it)->write( fd );
+	return 0;
+}
+

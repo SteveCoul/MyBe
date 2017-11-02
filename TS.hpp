@@ -24,6 +24,7 @@ public:
 	~TS();
 	Stream* stream( int pid );
 	unsigned int getUnusedPID( int lowest = 0);
+	int writePIDStream( int fd, unsigned pid );
 private:
 	std::vector<TSPacket*>	m_packets;
 	std::vector<TSPacket*>	m_packets_by_pid[ 8192 ];
