@@ -7,6 +7,7 @@
 
 #include "Options.hpp"
 #include "PAT.hpp"
+#include "PMT.hpp"
 #include "TS.hpp"
 #include "xlog.hpp"
 
@@ -65,11 +66,21 @@ int main( int argc, char** argv ) {
 								TSPacket* pmt_packet = pmt_stream->packet(0);
 								if ( pmt_packet->pusi() == 0 ) {
 									XLOG_ERROR( "First PMT TS Frame does not have PUSI set" );
-									ret = 5;
+									ret = 8;
 								} else {
 									size_t pmt_len;
 									const uint8_t* pmt_ptr = pmt_packet->getPayload( &pmt_len );
-									XLOG_HEXDUMP_INFO( pmt_ptr, pmt_len );
+									PMT pmt( pmt_ptr, pmt_len );
+									if ( pmt.isvalid() == false ) {
+										XLOG_ERROR( "Invalid PMT" );
+										ret = 9;
+									} else if ( pmt.streamsOfType( 27 ) != 1 ) {
+										XLOG_ERROR( "Expected one video stream and didn't find it" );
+										ret = 10;
+									} else {
+										unsigned int video_pid = pmt.getPidFirstOfType( 27 );
+										XLOG_INFO( "Video Stream is on Pid %d", video_pid );
+									}
 								}
 							}
 						}
