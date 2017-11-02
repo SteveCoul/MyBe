@@ -1,0 +1,75 @@
+
+DEP_DIR?=$(PWD)/OSX.deps
+
+all: $(DEP_DIR)/bin/autoconf $(DEP_DIR)/bin/automake $(DEP_DIR)/bin/libtool $(DEP_DIR)/bin/nasm
+	touch $(DEP_DIR)/.built
+
+clean:
+	rm -rf $(DEP_DIR)
+# autoconf
+$(DEP_DIR)/bin/autoconf: $(DEP_DIR)/src/autoconf-2.69/Makefile
+	make -C $(dir $^) install
+
+$(DEP_DIR)/src/autoconf-2.69/Makefile: $(DEP_DIR)/src/autoconf-2.69/configure
+	cd $(dir $@) && ./configure --prefix=$(DEP_DIR)/
+	touch $@
+
+$(DEP_DIR)/src/autoconf-2.69/configure: $(DEP_DIR)/src/autoconf-2.69.tar.gz
+	tar zxf $^ -C $(dir $^)
+	touch $@
+
+$(DEP_DIR)/src/autoconf-2.69.tar.gz:
+	mkdir -p $(dir $@)
+	cd $(dir $@) && curl -OL http://ftpmirror.gnu.org/autoconf/autoconf-2.69.tar.gz
+
+# automake
+$(DEP_DIR)/bin/automake: $(DEP_DIR)/src/automake-1.15/Makefile
+	make -C $(dir $^) install
+
+$(DEP_DIR)/src/automake-1.15/Makefile: $(DEP_DIR)/src/automake-1.15/configure $(DEP_DIR)/bin/autoconf
+	cd $(dir $@) && PATH=$(DEP_DIR)/bin:$(PATH) ./configure --prefix=$(DEP_DIR)/
+	touch $@
+
+$(DEP_DIR)/src/automake-1.15/configure: $(DEP_DIR)/src/automake-1.15.tar.gz
+	tar zxf $^ -C $(dir $^)
+	touch $@
+
+$(DEP_DIR)/src/automake-1.15.tar.gz:
+	mkdir -p $(dir $@)
+	cd $(dir $@) && curl -OL http://ftpmirror.gnu.org/automake/automake-1.15.tar.gz
+
+# libtool
+$(DEP_DIR)/bin/libtool: $(DEP_DIR)/src/libtool-2.4.6/Makefile
+	make -C $(dir $^) install
+
+$(DEP_DIR)/src/libtool-2.4.6/Makefile: $(DEP_DIR)/src/libtool-2.4.6/configure
+	cd $(dir $@) && PATH=$(DEP_DIR)/bin:$(PATH) ./configure --prefix=$(DEP_DIR)/
+	touch $@
+
+$(DEP_DIR)/src/libtool-2.4.6/configure: $(DEP_DIR)/src/libtool-2.4.6.tar.gz
+	tar zxf $^ -C $(dir $^)
+	touch $@
+
+$(DEP_DIR)/src/libtool-2.4.6.tar.gz:
+	mkdir -p $(dir $@)
+	cd $(dir $@) && curl -OL http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
+
+
+# nasm
+$(DEP_DIR)/bin/nasm: $(DEP_DIR)/src/nasm/Makefile
+	# seems to be a problem with install on man pages and I don't care, so install by hand
+	make -C $(dir $^) 
+	mkdir -p $(DEP_DIR)/bin
+	cp $(DEP_DIR)/src/nasm/nasm $@
+
+$(DEP_DIR)/src/nasm/Makefile: $(DEP_DIR)/src/nasm/configure
+	cd $(dir $@) && PATH=$(DEP_DIR)/bin:$(PATH) ./configure --prefix=$(DEP_DIR)/
+
+$(DEP_DIR)/src/nasm/configure: $(DEP_DIR)/src/nasm/configure.ac $(DEP_DIR)/bin/automake
+	cd $(dir $@) && PATH=$(DEP_DIR)/bin:$(PATH) ./autogen.sh
+
+$(DEP_DIR)/src/nasm/configure.ac:
+	mkdir -p $(DEP_DIR)/src
+	cd $(DEP_DIR)/src && git clone git://repo.or.cz/nasm.git
+	cd $(dir $@) && git checkout 120819e73c33b316bfe02e2bacdd22108763a12b
+
