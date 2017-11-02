@@ -43,14 +43,14 @@ PAT::PAT( const uint8_t* data, size_t len )
 				unsigned int program_id = ( p[2] & 0x1F ) << 8 | p[3];
 				p+=4;
 				len-=4;
-				m_program_ids.push_back( program_id );
+				m_pmt_pids.push_back( program_id );
 			}
 
 			if ( len != 0 ) {
 				XLOG_WARNING( "Ignore extraneous data bytes in PAT" );
 			}
 
-			XLOG_INFO( "PAT contained %u programs", m_program_ids.size() );
+			XLOG_INFO( "PAT contained %u programs", m_pmt_pids.size() );
 			m_valid = true;
 		}
 	}
@@ -66,6 +66,6 @@ void PAT::dump() {
 
 unsigned int PAT::numPrograms() {
 	if ( !m_valid ) return 0;
-	return m_program_ids.size();
+	return m_pmt_pids.size();
 }
 

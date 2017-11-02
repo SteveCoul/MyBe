@@ -17,7 +17,7 @@ private:
 	size_t			m_len;
 	bool			m_valid;
 	unsigned int	m_tsid;
-	std::vector<unsigned int>m_program_ids;
+	std::vector<unsigned int>m_pmt_pids;
 };
 
 #endif
