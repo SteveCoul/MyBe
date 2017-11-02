@@ -11,6 +11,10 @@ public:
 	bool isvalid();
 	// Caller is responsible for ensuring TS Packet is valid before calling any queries
 	unsigned int pid();
+	bool pusi();
+	bool hasPayload();
+	bool hasAdaptation();
+	const uint8_t* getPayload( size_t* p_size );
 private:
 	bool			m_copied;
 	uint8_t*		m_copy_data;

@@ -37,3 +37,29 @@ unsigned int TSPacket::pid() {
 	return rc;
 }
 
+bool TSPacket::pusi() { return ( ( m_raw_data[1] & 0x40 ) == 0x40 ); }
+bool TSPacket::hasPayload() { return ( ( m_raw_data[3] & 0x10 ) == 0x10 ); }
+bool TSPacket::hasAdaptation() { return ( ( m_raw_data[3] & 0x20 ) == 0x20 ); }
+
+const uint8_t* TSPacket::getPayload( size_t* p_size ) {
+	const uint8_t* p;
+	size_t l;
+
+	if ( hasPayload() == false ) {
+		p = NULL;
+		l = 0;
+	} else {
+		const uint8_t* p = m_raw_data + 4;
+		size_t l = 184;
+
+		if ( hasAdaptation() ) {
+			uint8_t field_len = p[0] + 1;
+			p+=field_len;
+			l-=field_len;
+		}
+	}
+
+	if ( p_size ) p_size[0] = l;
+	return p;
+}
+
