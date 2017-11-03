@@ -42,8 +42,10 @@ VideoDecoder::~VideoDecoder() {
 		avformat_close_input(&m_format_context);
 	if ( m_frame != NULL )
 		av_frame_free(&m_frame);
-	if ( m_io_context )
+	if ( m_io_context ) {
+		av_freep( &(m_io_context->buffer) );
 		av_freep( &m_io_context );
+	}
 }
 
 int VideoDecoder::init() {
