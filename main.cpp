@@ -9,12 +9,43 @@
 #include "PAT.hpp"
 #include "PMT.hpp"
 #include "TS.hpp"
+#include "VideoDecoder.hpp"
 #include "xlog.hpp"
+
+class AlternateVideoTask : public VideoDecoder::Callback {
+public:
+	void videoIncoming( AVFrame* frame ) {
+		XLOG_WARNING("Need to do something with video frame" );
+	}
+
+	void videoComplete() {
+	}
+
+	int run( TS* ts, unsigned int video_pid, unsigned int alternate_pid ) {
+		m_decoder = new VideoDecoder( ts, video_pid, this );
+		if ( m_decoder == NULL ) {
+			XLOG_ERROR("Failed to create video decoder" );
+			return -1;
+		}
+		if ( m_decoder->init() != 0 ) {
+			XLOG_ERROR("Failed to init video decoder" );
+			return -2;
+		}
+		m_decoder->run();
+		delete m_decoder;
+		return 0;
+	}
+private:
+	TS*				m_ts;
+	unsigned int	m_video_pid;
+	unsigned int	m_alternate_pid;
+	VideoDecoder*	m_decoder;
+};
 
 static
 int makeAlternateVideo( TS* ts, unsigned int video_pid, unsigned int alternate_pid ) {
-	XLOG_WARNING("not implemented");
-	return 0;
+	AlternateVideoTask task;
+	return task.run( ts, video_pid, alternate_pid );
 }
 
 int main( int argc, char** argv ) {
