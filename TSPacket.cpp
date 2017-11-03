@@ -68,3 +68,7 @@ int TSPacket::write( int fd ) {
 	return ::write( fd, m_raw_data, 188 );
 }
 
+const uint8_t* TSPacket::ptr() {
+	return m_raw_data;
+}
+
