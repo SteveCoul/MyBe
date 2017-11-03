@@ -4,7 +4,7 @@ THIRD_PARTY=$(PWD)/3rdParty
 # ---------------
 
 all: ffmpeg
-	$(CXX) -I. -o recode main.cpp xlog.cpp TS.cpp TSPacket.cpp Options.cpp PAT.cpp PMT.cpp VideoDecoder.cpp \
+	$(CXX) -I. -o recode main.cpp xlog.cpp TS.cpp TSPacket.cpp Options.cpp PAT.cpp PMT.cpp VideoDecoder.cpp VideoEncoder.cpp \
 			-I3rdParty/include -L3rdParty/lib -lavformat -lavcodec -lavutil -lswscale -lswresample -lx264
 
 clean: clean_deps

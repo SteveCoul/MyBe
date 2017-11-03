@@ -10,12 +10,13 @@
 #include "PMT.hpp"
 #include "TS.hpp"
 #include "VideoDecoder.hpp"
+#include "VideoEncoder.hpp"
 #include "xlog.hpp"
 
 class AlternateVideoTask : public VideoDecoder::Callback {
 public:
 	void videoIncoming( AVFrame* frame ) {
-		XLOG_WARNING("Need to do something with video frame" );
+        m_encoder->newFrame( frame );
 	}
 
 	void videoComplete() {
@@ -31,8 +32,18 @@ public:
 			XLOG_ERROR("Failed to init video decoder" );
 			return -2;
 		}
+		m_encoder = new VideoEncoder( ts, alternate_pid );
+		if ( m_encoder == NULL ) {
+			XLOG_ERROR("Failed to create video encoder" );
+			return -1;
+		}
+		if ( m_encoder->init() != 0 ) {
+			XLOG_ERROR("Failed to init video encoder" );
+			return -2;
+		}
 		m_decoder->run();
 		delete m_decoder;
+		delete m_encoder;
 		return 0;
 	}
 private:
@@ -40,6 +51,7 @@ private:
 	unsigned int	m_video_pid;
 	unsigned int	m_alternate_pid;
 	VideoDecoder*	m_decoder;
+	VideoEncoder*	m_encoder;
 };
 
 static
