@@ -101,10 +101,27 @@ int VideoEncoder::init() {
 	return 0;
 }
 
+static const char* pict_type( int code ) {
+	const char* rc;
+	switch( code ) {
+	case AV_PICTURE_TYPE_I: rc = "I"; break;
+	case AV_PICTURE_TYPE_P: rc = "P"; break;
+	case AV_PICTURE_TYPE_B: rc = "B"; break;
+	case AV_PICTURE_TYPE_S: rc = "S"; break;
+	case AV_PICTURE_TYPE_SI: rc = "SI"; break;
+	case AV_PICTURE_TYPE_SP: rc = "SP"; break;
+	case AV_PICTURE_TYPE_BI: rc = "BI"; break;
+	default: rc = "?"; break;	
+	}
+	return rc;
+}
+
 void VideoEncoder::newFrame( AVFrame* frame ) {
 	int got_packet = 0;
 	AVPacket pkt = { 0 };
 	int ret;
+
+	XLOG_INFO( "Frame type %s", pict_type( frame->pict_type ) );
 
 	av_init_packet(&pkt);
 
@@ -144,13 +161,16 @@ void VideoEncoder::add_stream( enum AVCodecID codec_id) {
 	}
 
 	m_codec_context->codec_id = codec_id;
-	m_codec_context->bit_rate = m_bit_rate == 0 ? 40000 : m_bit_rate;
+	m_codec_context->bit_rate = m_bit_rate == 0 ? 1000 : m_bit_rate;
 	m_codec_context->width    = m_width;
 	m_codec_context->height   = m_height;
 	m_stream->time_base = m_time_base;
 	m_codec_context->time_base       = (AVRational){1001, 30000};
 	m_codec_context->gop_size      = 200;
 	m_codec_context->pix_fmt       = m_pixel_format;
+
+
+	m_format_context->bit_rate = 100;
 
 	/* Some formats want stream headers to be separate. */
 	if (m_format_context->oformat->flags & AVFMT_GLOBALHEADER)
