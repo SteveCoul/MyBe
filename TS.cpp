@@ -3,6 +3,11 @@
 
 #include "xlog.hpp"
 
+void TS::add( TSPacket* pkt ) {
+	m_packets.push_back( pkt );
+	m_packets_by_pid[ pkt->pid() ].push_back( pkt );
+}
+
 TS::TS( const void* data, size_t length ) {
 	while ( length >= 188 ) {
 		TSPacket* pkt = new TSPacket( data, 188 );

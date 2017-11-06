@@ -12,14 +12,16 @@ int VideoEncoder::write( uint8_t* buf, int buf_size ) {
 	// and we will also change the pid to the one requested in the constructor!
 	int ret = buf_size;
 	while ( buf_size >= 188 ) {
-		TSPacket pkt( buf, true /* with copy so we can change pid */ );
-		if ( pkt.pid() == 256 ) {
-			pkt.changePID( m_pid );
+		TSPacket* pkt = new TSPacket( buf, true /* with copy so we can change pid */ );
+		if ( pkt->pid() == 256 ) {
+			pkt->changePID( m_pid );
+			m_ts->add( pkt );	/* TS takes ownership */
+		} else {
+			delete pkt;
 		}
 		buf+=188;
 		buf_size-=188;
 	}
-exit(0);
 	return ret;
 }
 
