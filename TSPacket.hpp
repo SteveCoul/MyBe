@@ -17,6 +17,7 @@ public:
 	const uint8_t* getPayload( size_t* p_size );
 	int write( int fd );
 	const uint8_t* ptr();
+	void changePID(unsigned int new_pid);
 private:
 	bool			m_copied;
 	uint8_t*		m_copy_data;

@@ -72,3 +72,12 @@ const uint8_t* TSPacket::ptr() {
 	return m_raw_data;
 }
 
+void TSPacket::changePID(unsigned int new_pid) {
+	if ( m_copied ) {
+		m_copy_data[1] = ( m_copy_data[1] & 0xE0 ) | ( ( new_pid >> 8 ) & 0x1F );
+		m_copy_data[2] = new_pid & 0xFF;
+	} else {
+		XLOG_ERROR("Ignoring attempt to change read only data" );
+	}
+}
+
