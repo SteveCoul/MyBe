@@ -5,9 +5,13 @@
 
 const char* hack_filename = "hack.ts";
 
-VideoEncoder::VideoEncoder( TS* ts, unsigned int pid )
+VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format, int width, int height )
 	: m_ts( ts )
-	, m_pid( pid ) {
+	, m_pid( pid )
+	, m_pixel_format( format )
+	, m_width( width )
+	, m_height( height )
+	{
 }
 
 VideoEncoder::~VideoEncoder() {
@@ -111,14 +115,12 @@ void VideoEncoder::add_stream( enum AVCodecID codec_id) {
 
 	enc->codec_id = codec_id;
 	enc->bit_rate = 400000; // FIXME
-	enc->width    = 352;    // FIXME
-	enc->height   = 288;    // FIXME
+	enc->width    = m_width;
+	enc->height   = m_height;
 	st->time_base = (AVRational){ 1, 30 };  //FIXME
 	enc->time_base       = st->time_base;
 	enc->gop_size      = 12; 
-	enc->pix_fmt       = AV_PIX_FMT_YUV420P;    // FIXME
-	//enc->max_b_frames = 2;
-	//enc->mb_decision = 2;
+	enc->pix_fmt       = m_pixel_format;
 
 	/* Some formats want stream headers to be separate. */
 	if (oc->oformat->flags & AVFMT_GLOBALHEADER)

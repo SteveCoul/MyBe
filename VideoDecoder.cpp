@@ -154,4 +154,7 @@ void VideoDecoder::run() {
 	} while (m_got_frame);
 }
 
+enum AVPixelFormat VideoDecoder::format() { return m_pixel_format; }
+int VideoDecoder::width() { return m_width; }
+int VideoDecoder::height() { return m_height; }
 

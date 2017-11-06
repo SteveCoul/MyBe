@@ -32,7 +32,7 @@ public:
 			XLOG_ERROR("Failed to init video decoder" );
 			return -2;
 		}
-		m_encoder = new VideoEncoder( ts, alternate_pid );
+		m_encoder = new VideoEncoder( ts, alternate_pid, m_decoder->format(), m_decoder->width(), m_decoder->height() );
 		if ( m_encoder == NULL ) {
 			XLOG_ERROR("Failed to create video encoder" );
 			return -1;

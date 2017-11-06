@@ -25,6 +25,9 @@ public:
     void run();
 	static int avioread_wrapper(void *opaque, uint8_t *buf, int buf_size );
 	int avioread( uint8_t* buf, int buf_size );
+	enum AVPixelFormat format();
+	int width();
+	int height();
 private:
     Callback*               m_callback;
     AVFormatContext*        m_format_context;
