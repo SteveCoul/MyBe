@@ -18,7 +18,9 @@ public:
     int init();
     void newFrame( AVFrame* frame );
 private:
+	static int aviowrite_wrapper(void *opaque, uint8_t *buf, int buf_size );
     void add_stream( enum AVCodecID codec_id);
+	int write( uint8_t* buf, int buf_size );
 private:
     AVOutputFormat *fmt;
     AVFormatContext *oc;
@@ -34,6 +36,8 @@ private:
 	int m_height;
 	AVRational m_time_base;
 	int64_t m_bit_rate;
+    AVIOContext*			m_io_context;
+	unsigned char*			m_io_context_buffer;
 };
 
 #endif

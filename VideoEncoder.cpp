@@ -3,7 +3,25 @@
 
 #include "xlog.hpp"
 
-const char* hack_filename = "hack.ts";
+int VideoEncoder::aviowrite_wrapper(void *opaque, uint8_t *buf, int buf_size ) {
+	return ((VideoEncoder*)opaque)->write( buf, buf_size );
+}
+
+int VideoEncoder::write( uint8_t* buf, int buf_size ) {
+	// HACKERY AHEAD - Video is always pid 256 from ffmpeg atm. Here we will only pass packets which area on that pid
+	// and we will also change the pid to the one requested in the constructor!
+	int ret = buf_size;
+	while ( buf_size >= 188 ) {
+		TSPacket pkt( buf, true /* with copy so we can change pid */ );
+		if ( pkt.pid() == 256 ) {
+			pkt.changePID( m_pid );
+		}
+		buf+=188;
+		buf_size-=188;
+	}
+exit(0);
+	return ret;
+}
 
 VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format, int width, int height, AVRational time_base, int64_t bit_rate )
 	: m_ts( ts )
@@ -13,6 +31,7 @@ VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format,
 	, m_height( height )
 	, m_time_base( time_base )
 	, m_bit_rate( bit_rate )
+	, m_io_context( NULL )
 	{
 }
 
@@ -21,8 +40,10 @@ VideoEncoder::~VideoEncoder() {
 
 	avcodec_free_context(&enc);
 
-	if (!(fmt->flags & AVFMT_NOFILE))
-		avio_closep(&oc->pb);
+	if ( m_io_context ) {
+		av_freep( &(m_io_context->buffer) );
+		av_freep( &m_io_context );
+	}
 	avformat_free_context(oc);
 }
 
@@ -32,9 +53,23 @@ int VideoEncoder::init() {
 
 	av_register_all();
 
-	avformat_alloc_output_context2(&oc, NULL, "mpegts", hack_filename);
+	m_io_context_buffer = (uint8_t*)av_malloc( 4096*188 );
+	if ( m_io_context_buffer == NULL ) {
+		XLOG_ERROR( "Failed to alloc context buffer" );
+		return -1;
+	}
+
+	m_io_context = avio_alloc_context( m_io_context_buffer, 4096*188, 1, this, NULL, &aviowrite_wrapper, NULL );
+	if ( !m_io_context ) {
+		XLOG_ERROR( "Failed to allocate IO context" );
+		return -1;
+	}
+
+	avformat_alloc_output_context2(&oc, NULL, "mpegts", NULL );
 	if (!oc)
 		return 1;
+
+	oc->pb = m_io_context;
 
 	fmt = oc->oformat;
 
@@ -52,16 +87,6 @@ int VideoEncoder::init() {
 	if (ret < 0) {
 		fprintf(stderr, "Could not copy the stream parameters\n");
 		exit(1);
-	}
-
-	av_dump_format(oc, 0, hack_filename, 1);
-
-	if (!(fmt->flags & AVFMT_NOFILE)) {
-		ret = avio_open(&oc->pb, hack_filename, AVIO_FLAG_WRITE);
-		if (ret < 0) {
-			fprintf(stderr, "Could not open '%s': %s\n", hack_filename, av_err2str(ret));
-			return 1;
-		}
 	}
 
 	ret = avformat_write_header(oc, &opts);
