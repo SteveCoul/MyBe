@@ -28,6 +28,8 @@ public:
 	enum AVPixelFormat format();
 	int width();
 	int height();
+	AVRational timebase();
+	int64_t bitrate();
 private:
     Callback*               m_callback;
     AVFormatContext*        m_format_context;
@@ -45,6 +47,8 @@ private:
 	unsigned char*			m_io_context_buffer;
 	unsigned int			m_next_packet;
 	TS::Stream*				m_ts_stream;
+	AVRational				m_time_base;
+	int64_t					m_bit_rate;
 };
 
 #endif

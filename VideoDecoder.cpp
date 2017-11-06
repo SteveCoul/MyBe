@@ -32,7 +32,8 @@ VideoDecoder::VideoDecoder( TS* ts, unsigned int pid, VideoDecoder::Callback* ca
 	, m_ts( ts )
 	, m_pid( pid )
 	, m_io_context( NULL )
-	, m_next_packet( 0 ) {
+	, m_next_packet( 0 ) 
+	{
 }
 
 VideoDecoder::~VideoDecoder() {
@@ -117,7 +118,8 @@ int VideoDecoder::init() {
 	m_width = m_codec_context->width;
 	m_height = m_codec_context->height;
 	m_pixel_format = m_codec_context->pix_fmt;
-
+	m_time_base = m_codec_context->time_base;
+	m_bit_rate = m_codec_context->bit_rate;
 	m_frame = av_frame_alloc();
 	if (!m_frame) {
 		XLOG_ERROR( "Could not allocate frame");
@@ -157,4 +159,6 @@ void VideoDecoder::run() {
 enum AVPixelFormat VideoDecoder::format() { return m_pixel_format; }
 int VideoDecoder::width() { return m_width; }
 int VideoDecoder::height() { return m_height; }
+int64_t VideoDecoder::bitrate() { return m_bit_rate; }
+AVRational VideoDecoder::timebase() { return m_time_base; }
 
