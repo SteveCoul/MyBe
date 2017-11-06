@@ -36,15 +36,17 @@ VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format,
 }
 
 VideoEncoder::~VideoEncoder() {
-	av_write_trailer(oc);
+	av_write_trailer(m_format_context);
 
-	avcodec_free_context(&enc);
+	// FIXME need to close codec_context first! 
+	
+	avcodec_free_context(&m_codec_context);
 
 	if ( m_io_context ) {
 		av_freep( &(m_io_context->buffer) );
 		av_freep( &m_io_context );
 	}
-	avformat_free_context(oc);
+	avformat_free_context(m_format_context);
 }
 
 int VideoEncoder::init() {
@@ -65,33 +67,33 @@ int VideoEncoder::init() {
 		return -1;
 	}
 
-	avformat_alloc_output_context2(&oc, NULL, "mpegts", NULL );
-	if (!oc)
+	avformat_alloc_output_context2(&m_format_context, NULL, "mpegts", NULL );
+	if (!m_format_context)
 		return 1;
 
-	oc->pb = m_io_context;
+	m_format_context->pb = m_io_context;
 
-	fmt = oc->oformat;
+	m_output_format = m_format_context->oformat;
 
-	fmt->video_codec = AV_CODEC_ID_H264;
+	m_output_format->video_codec = AV_CODEC_ID_H264;
 
-	add_stream( fmt->video_codec);
+	add_stream( m_output_format->video_codec);
 
-	ret = avcodec_open2(enc, video_codec, &opts);
+	ret = avcodec_open2(m_codec_context, m_codec, &opts);
 	if (ret < 0) {
-		fprintf(stderr, "Could not open video codec: %s\n", av_err2str(ret));
+		fprintf(stderr, "Could not open video codec\n" );
 		exit(1);
 	}
 
-	ret = avcodec_parameters_from_context(st->codecpar, enc);
+	ret = avcodec_parameters_from_context(m_stream->codecpar, m_codec_context);
 	if (ret < 0) {
 		fprintf(stderr, "Could not copy the stream parameters\n");
 		exit(1);
 	}
 
-	ret = avformat_write_header(oc, &opts);
+	ret = avformat_write_header(m_format_context, &opts);
 	if (ret < 0) {
-		fprintf(stderr, "Error occurred when opening output file: %s\n", av_err2str(ret));
+		fprintf(stderr, "Error occurred when opening output file\n" );
 		return 1;
 	}
 	return 0;
@@ -104,15 +106,15 @@ void VideoEncoder::newFrame( AVFrame* frame ) {
 
 	av_init_packet(&pkt);
 
-	ret = avcodec_encode_video2(enc, &pkt, frame, &got_packet);
+	ret = avcodec_encode_video2(m_codec_context, &pkt, frame, &got_packet);
 	if (ret < 0) {
-		fprintf(stderr, "Error encoding video frame: %s\n", av_err2str(ret));
+		fprintf(stderr, "Error encoding video frame\n" );
 		return;
 	}
 
 	if (got_packet) {
-		pkt.stream_index = st->index;
-		ret = av_interleaved_write_frame(oc, &pkt);
+		pkt.stream_index = m_stream->index;
+		ret = av_interleaved_write_frame(m_format_context, &pkt);
 		// ERROR CHECK
 	}
 }
@@ -121,36 +123,36 @@ void VideoEncoder::add_stream( enum AVCodecID codec_id) {
 	int i;
 
 	/* find the encoder */
-	video_codec = avcodec_find_encoder(codec_id);
-	if (!video_codec) {
+	m_codec = avcodec_find_encoder(codec_id);
+	if (!m_codec) {
 		fprintf(stderr, "Could not find encoder for '%s'\n", avcodec_get_name(codec_id));
 		exit(1);
 	}
 
-	st = avformat_new_stream(oc, NULL);
-	if (!st) {
+	m_stream = avformat_new_stream(m_format_context, NULL);
+	if (!m_stream) {
 		fprintf(stderr, "Could not allocate stream\n");
 		exit(1);
 	}
-	st->id = oc->nb_streams-1;
-	enc = avcodec_alloc_context3(video_codec);
-	if (!enc) {
+	m_stream->id = m_format_context->nb_streams-1;
+	m_codec_context = avcodec_alloc_context3(m_codec);
+	if (!m_codec_context) {
 		fprintf(stderr, "Could not alloc an encoding context\n");
 		exit(1);
 	}
 
-	enc->codec_id = codec_id;
-	enc->bit_rate = m_bit_rate == 0 ? 40000 : m_bit_rate;
-	enc->width    = m_width;
-	enc->height   = m_height;
-	st->time_base = m_time_base;
-	enc->time_base       = (AVRational){1001, 30000};
-	enc->gop_size      = 200;
-	enc->pix_fmt       = m_pixel_format;
+	m_codec_context->codec_id = codec_id;
+	m_codec_context->bit_rate = m_bit_rate == 0 ? 40000 : m_bit_rate;
+	m_codec_context->width    = m_width;
+	m_codec_context->height   = m_height;
+	m_stream->time_base = m_time_base;
+	m_codec_context->time_base       = (AVRational){1001, 30000};
+	m_codec_context->gop_size      = 200;
+	m_codec_context->pix_fmt       = m_pixel_format;
 
 	/* Some formats want stream headers to be separate. */
-	if (oc->oformat->flags & AVFMT_GLOBALHEADER)
-		enc->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+	if (m_format_context->oformat->flags & AVFMT_GLOBALHEADER)
+		m_codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 }
 
 
