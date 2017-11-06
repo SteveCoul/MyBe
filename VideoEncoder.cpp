@@ -14,8 +14,6 @@ VideoEncoder::~VideoEncoder() {
 	av_write_trailer(oc);
 
 	avcodec_free_context(&enc);
-	av_frame_free(&frame);
-	av_frame_free(&tmp_frame);
 
 	if (!(fmt->flags & AVFMT_NOFILE))
 		avio_closep(&oc->pb);
