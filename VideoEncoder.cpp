@@ -5,12 +5,14 @@
 
 const char* hack_filename = "hack.ts";
 
-VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format, int width, int height )
+VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format, int width, int height, AVRational time_base, int64_t bit_rate )
 	: m_ts( ts )
 	, m_pid( pid )
 	, m_pixel_format( format )
 	, m_width( width )
 	, m_height( height )
+	, m_time_base( time_base )
+	, m_bit_rate( bit_rate )
 	{
 }
 
@@ -84,7 +86,6 @@ void VideoEncoder::newFrame( AVFrame* frame ) {
 	}
 
 	if (got_packet) {
-		av_packet_rescale_ts(&pkt, enc->time_base, st->time_base);
 		pkt.stream_index = st->index;
 		ret = av_interleaved_write_frame(oc, &pkt);
 		// ERROR CHECK
@@ -114,12 +115,12 @@ void VideoEncoder::add_stream( enum AVCodecID codec_id) {
 	}
 
 	enc->codec_id = codec_id;
-	enc->bit_rate = 400000; // FIXME
+	enc->bit_rate = m_bit_rate == 0 ? 40000 : m_bit_rate;
 	enc->width    = m_width;
 	enc->height   = m_height;
-	st->time_base = (AVRational){ 1, 30 };  //FIXME
-	enc->time_base       = st->time_base;
-	enc->gop_size      = 12; 
+	st->time_base = m_time_base;
+	enc->time_base       = (AVRational){1001, 30000};
+	enc->gop_size      = 200;
 	enc->pix_fmt       = m_pixel_format;
 
 	/* Some formats want stream headers to be separate. */

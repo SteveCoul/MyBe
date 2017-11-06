@@ -118,9 +118,12 @@ int VideoDecoder::init() {
 	m_width = m_codec_context->width;
 	m_height = m_codec_context->height;
 	m_pixel_format = m_codec_context->pix_fmt;
-	m_time_base = m_codec_context->time_base;
-	m_bit_rate = m_codec_context->bit_rate;
+	m_time_base = m_stream->time_base;
+	m_bit_rate = m_codec_context->bit_rate;		/* seems to be 0 ? */
 	m_frame = av_frame_alloc();
+
+	XLOG_INFO( "stream avg frame rate %d:%d", m_stream->avg_frame_rate.num, m_stream->avg_frame_rate.den );
+
 	if (!m_frame) {
 		XLOG_ERROR( "Could not allocate frame");
 		return -1;

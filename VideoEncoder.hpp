@@ -13,7 +13,7 @@ extern "C" {
 
 class VideoEncoder {
 public:
-    VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format, int width, int height );
+    VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format, int width, int height, AVRational time_base, int64_t bit_rate );
     ~VideoEncoder();
     int init();
     void newFrame( AVFrame* frame );
@@ -32,6 +32,8 @@ private:
 	AVPixelFormat m_pixel_format;
 	int m_width;
 	int m_height;
+	AVRational m_time_base;
+	int64_t m_bit_rate;
 };
 
 #endif
