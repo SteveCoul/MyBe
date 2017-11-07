@@ -1,4 +1,14 @@
 
+#if 0
+look at http://ffmpeg.org/doxygen/2.8/frame_8c.html#a52ecfa0b4c5c6b3c81faf25edb0b5dea
+
+for frame_copy_video.
+
+Create a pipeline class we call inside newFrame() where we pass it the current frame and it returns us one to encode that might be a copy of a previous image!
+
+
+#endif
+
 #include "VideoEncoder.hpp"
 
 #include "xlog.hpp"
