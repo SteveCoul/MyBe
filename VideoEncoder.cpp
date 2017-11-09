@@ -81,7 +81,7 @@ int VideoEncoder::init() {
 
 	avformat_alloc_output_context2(&m_format_context, NULL, "mpegts", NULL );
 	if (!m_format_context)
-		return 1;
+		return -1;
 
 	m_format_context->pb = m_io_context;
 
@@ -93,20 +93,20 @@ int VideoEncoder::init() {
 
 	ret = avcodec_open2(m_codec_context, m_codec, &opts);
 	if (ret < 0) {
-		fprintf(stderr, "Could not open video codec\n" );
-		exit(1);
+		XLOG_ERROR( "Could not open video codec" );
+		return -1;
 	}
 
 	ret = avcodec_parameters_from_context(m_stream->codecpar, m_codec_context);
 	if (ret < 0) {
-		fprintf(stderr, "Could not copy the stream parameters\n");
-		exit(1);
+		XLOG_ERROR( "Could not copy the stream parameters");
+		return -1;
 	}
 
 	ret = avformat_write_header(m_format_context, &opts);
 	if (ret < 0) {
-		fprintf(stderr, "Error occurred when opening output file\n" );
-		return 1;
+		XLOG_ERROR( "Error occurred when opening output file" );
+		return -1;
 	}
 	return 0;
 }
@@ -137,7 +137,7 @@ void VideoEncoder::newFrame( AVFrame* frame ) {
 
 	ret = avcodec_encode_video2(m_codec_context, &pkt, frame, &got_packet);
 	if (ret < 0) {
-		fprintf(stderr, "Error encoding video frame\n" );
+		XLOG_ERROR( "Error encoding video frame" );
 		return;
 	}
 
@@ -154,20 +154,20 @@ void VideoEncoder::add_stream( enum AVCodecID codec_id) {
 	/* find the encoder */
 	m_codec = avcodec_find_encoder(codec_id);
 	if (!m_codec) {
-		fprintf(stderr, "Could not find encoder for '%s'\n", avcodec_get_name(codec_id));
-		exit(1);
+		XLOG_ERROR( "Could not find encoder for '%s'", avcodec_get_name(codec_id));
+		return;
 	}
 
 	m_stream = avformat_new_stream(m_format_context, NULL);
 	if (!m_stream) {
-		fprintf(stderr, "Could not allocate stream\n");
-		exit(1);
+		XLOG_ERROR( "Could not allocate stream");
+		return;
 	}
 	m_stream->id = m_format_context->nb_streams-1;
 	m_codec_context = avcodec_alloc_context3(m_codec);
 	if (!m_codec_context) {
-		fprintf(stderr, "Could not alloc an encoding context\n");
-		exit(1);
+		XLOG_ERROR( "Could not alloc an encoding context");
+		return;
 	}
 
 	m_codec_context->codec_id = codec_id;
