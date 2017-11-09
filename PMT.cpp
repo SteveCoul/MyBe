@@ -44,8 +44,6 @@ PMT::PMT( const uint8_t* data, size_t len )
 
 			XLOG_INFO( "PMT as follows" );
 
-			// FIXME - most of the above is generic section header stuff 
-
 			unsigned int PCR = ( ((p[0]&0x1F)<<8)|p[1] );
 			XLOG_INFO("PCR %d", PCR );
 

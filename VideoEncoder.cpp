@@ -18,8 +18,6 @@ int VideoEncoder::aviowrite_wrapper(void *opaque, uint8_t *buf, int buf_size ) {
 }
 
 int VideoEncoder::write( uint8_t* buf, int buf_size ) {
-	// HACKERY AHEAD - Video is always pid 256 from ffmpeg atm. Here we will only pass packets which area on that pid
-	// and we will also change the pid to the one requested in the constructor!
 	int ret = buf_size;
 	while ( buf_size >= 188 ) {
 		TSPacket* pkt = new TSPacket( buf, true /* with copy so we can change pid */ );
@@ -50,8 +48,6 @@ VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format,
 VideoEncoder::~VideoEncoder() {
 	av_write_trailer(m_format_context);
 
-	// FIXME need to close codec_context first! 
-	
 	avcodec_free_context(&m_codec_context);
 
 	if ( m_io_context ) {

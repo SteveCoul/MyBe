@@ -37,8 +37,6 @@ PAT::PAT( const uint8_t* data, size_t len )
 			p+=5;
 			len-=5;
 
-			// FIXME - most of the above is generic section header stuff 
-
 			while ( len >= 4 ) {
 				unsigned int program_id = ( p[2] & 0x1F ) << 8 | p[3];
 				p+=4;
