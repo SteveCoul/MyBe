@@ -122,6 +122,9 @@ static const char* pict_type( int code ) {
 	return rc;
 }
 
+void VideoEncoder::endOfVideo() {
+}
+
 void VideoEncoder::newFrame( AVFrame* frame ) {
 	int got_packet = 0;
 	AVPacket pkt = { 0 };

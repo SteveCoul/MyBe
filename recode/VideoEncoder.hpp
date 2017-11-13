@@ -17,6 +17,7 @@ public:
     ~VideoEncoder();
     int init();
     void newFrame( AVFrame* frame );
+	void endOfVideo();
 private:
 	static int aviowrite_wrapper(void *opaque, uint8_t *buf, int buf_size );
     void add_stream( enum AVCodecID codec_id);

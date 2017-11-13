@@ -20,6 +20,7 @@ public:
 	}
 
 	void videoComplete() {
+		m_encoder->endOfVideo();
 	}
 
 	int run( TS* ts, unsigned int video_pid, unsigned int alternate_pid ) {

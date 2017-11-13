@@ -155,6 +155,8 @@ void VideoDecoder::run() {
 		if (m_got_frame) 
 			m_callback->videoIncoming( m_frame );
 	} while (m_got_frame);
+
+	m_callback->videoComplete();
 }
 
 enum AVPixelFormat VideoDecoder::format() { return m_pixel_format; }
