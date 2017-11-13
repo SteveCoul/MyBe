@@ -3,7 +3,8 @@ THIRD_PARTY=$(PWD)/3rdParty
 
 # ---------------
 
-all: recode
+all: recode/.configured
+	PATH=$(DEPS_PATH):$(PATH) $(MAKE) -C recode 
 
 clean: clean_deps
 	rm -rf $(THIRD_PARTY)
@@ -36,13 +37,9 @@ endif
 
 # ---------------
 
-.PHONY: recode
-recode: recode/recode
+recode/.configured:
 
-recode/recode: recode/.configured $(THIRD_PARTY)/bin/ffmpeg
-	PATH=$(DEPS_PATH):$(PATH) $(MAKE) -C recode 
-
-recode/.configured: recode/configure
+recode/.configured: recode/configure $(THIRD_PARTY)/bin/ffmpeg
 	cd recode && \
 		CFLAGS="-I $(THIRD_PARTY)/include" \
 		CXXFLAGS="-I $(THIRD_PARTY)/include" \
