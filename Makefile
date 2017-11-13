@@ -3,14 +3,12 @@ THIRD_PARTY=$(PWD)/3rdParty
 
 # ---------------
 
-all: ffmpeg
-	$(CXX) -I. -o recode main.cpp xlog.cpp TS.cpp TSPacket.cpp Options.cpp PAT.cpp PMT.cpp VideoDecoder.cpp VideoEncoder.cpp \
-			-I3rdParty/include -L3rdParty/lib -lavformat -lavcodec -lavutil -lswscale -lswresample -lx264
+all: recode
 
 clean: clean_deps
 	rm -rf $(THIRD_PARTY)
 	rm -rf *.dSYM
-	rm -f recode
+	$(MAKE) -C recode clean
 
 # ---------------
 
@@ -38,6 +36,25 @@ endif
 
 # ---------------
 
+.PHONY: recode
+recode: recode/recode
+
+recode/recode: recode/.configured $(THIRD_PARTY)/bin/ffmpeg
+	PATH=$(DEPS_PATH):$(PATH) $(MAKE) -C recode 
+
+recode/.configured: recode/configure
+	cd recode && \
+		CFLAGS="-I $(THIRD_PARTY)/include" \
+		CXXFLAGS="-I $(THIRD_PARTY)/include" \
+		LDFLAGS="-L $(THIRD_PARTY)/lib" \
+		PATH=$(DEPS_PATH):$(PATH) ./configure 
+	touch $@
+
+recode/configure: 
+	cd recode && PATH=$(DEPS_PATH):$(PATH) autoreconf -i
+
+# ---------------
+
 .PHONY: x264
 x264: $(THIRD_PARTY)/lib/libx264.a
 
@@ -49,7 +66,7 @@ $(X264_DIR)/libx264.a: $(X264_DIR)/.configured
 	PATH=$(DEPS_PATH) && make -C $(X264_DIR) install
 
 $(X264_DIR)/.configured: $(X264_DIR)/configure $(HOST_DEPS)
-	cd $(X264_DIR) && PATH=$(DEPS_PATH) ./configure --prefix=$(THIRD_PARTY) --enable-static --enable-shared
+	cd $(X264_DIR) && PATH=$(DEPS_PATH):$(PATH) ./configure --prefix=$(THIRD_PARTY) --enable-static --enable-shared
 	touch $@
 
 $(X264_DIR)/configure:
