@@ -43,7 +43,7 @@ recode/.configured: recode/configure $(THIRD_PARTY)/bin/ffmpeg
 	cd recode && \
 		CFLAGS="-I $(THIRD_PARTY)/include" \
 		CXXFLAGS="-I $(THIRD_PARTY)/include" \
-		LDFLAGS="-L $(THIRD_PARTY)/lib" \
+		LDFLAGS="-L $(THIRD_PARTY)/lib -Wl,-rpath-link,$(THIRD_PARTY)/lib -Wl,-rpath,$(THIRD_PARTY)/lib" \
 		PATH=$(DEPS_PATH):$(PATH) ./configure 
 	touch $@
 
