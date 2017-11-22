@@ -1,6 +1,8 @@
 
 bin_PROGRAMS=recode
 
+recode_CXXFLAGS=
+recode_CXXFLAGS+=-I$(FFMPEG_INCLUDE_DIR)
 recode_SOURCES=
 recode_SOURCES+=Options.cpp
 recode_SOURCES+=PAT.cpp
@@ -12,5 +14,7 @@ recode_SOURCES+=VideoEncoder.cpp
 recode_SOURCES+=main.cpp
 recode_SOURCES+=xlog.cpp
 
-recode_LDFLAGS=
+recode_LDADD=-lavformat -lavcodec -lavutil -lswresample -lx264
+
+recode_LDFLAGS=-L$(FFMPEG_LIBRARY_DIR)
 

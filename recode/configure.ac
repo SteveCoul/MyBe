@@ -3,10 +3,8 @@ AM_INIT_AUTOMAKE()
 
 AC_PROG_CXX()
 
-AC_CHECK_HEADERS(libavutil/imgutils.h,[], AC_MSG_ERROR([Need ffmpeg setup]),[] )
-AC_CHECK_LIB(avformat,avformat_close_input,[], AC_MSG_ERROR([Need ffmpeg libs setup]), [] )
-AC_CHECK_LIB(avcodec,avcodec_decode_video2,[], AC_MSG_ERROR([avcodec lib missing on LDFLAGS]), [] )
-AC_CHECK_LIB(avutil,av_basename,[], AC_MSG_ERROR([avutil lib missing on LDFLAGS]), [-ldl] )
+AC_ARG_VAR([FFMPEG_INCLUDE_DIR],[A path for adding to header search path for ffmpeg])
+AC_ARG_VAR([FFMPEG_LIBRARY_DIR],[A path for adding to library search path for ffmpeg])
 
 AC_OUTPUT(Makefile)
 
