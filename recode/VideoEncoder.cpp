@@ -9,6 +9,10 @@ Create a pipeline class we call inside newFrame() where we pass it the current f
 
 #endif
 
+extern "C" {
+#include <libavutil/opt.h>
+};
+
 #include "VideoEncoder.hpp"
 
 #include "xlog.hpp"
@@ -104,22 +108,8 @@ int VideoEncoder::init() {
 		XLOG_ERROR( "Error occurred when opening output file" );
 		return -1;
 	}
-	return 0;
-}
 
-static const char* pict_type( int code ) {
-	const char* rc;
-	switch( code ) {
-	case AV_PICTURE_TYPE_I: rc = "I"; break;
-	case AV_PICTURE_TYPE_P: rc = "P"; break;
-	case AV_PICTURE_TYPE_B: rc = "B"; break;
-	case AV_PICTURE_TYPE_S: rc = "S"; break;
-	case AV_PICTURE_TYPE_SI: rc = "SI"; break;
-	case AV_PICTURE_TYPE_SP: rc = "SP"; break;
-	case AV_PICTURE_TYPE_BI: rc = "BI"; break;
-	default: rc = "?"; break;	
-	}
-	return rc;
+	return 0;
 }
 
 void VideoEncoder::endOfVideo() {
@@ -130,9 +120,6 @@ void VideoEncoder::newFrame( AVFrame* frame ) {
 	int got_packet = 0;
 	AVPacket pkt = { 0 };
 	int ret;
-
-	if ( frame )
-		XLOG_INFO( "Frame type %s", pict_type( frame->pict_type ) );
 
 	av_init_packet(&pkt);
 
@@ -179,6 +166,8 @@ void VideoEncoder::add_stream( enum AVCodecID codec_id) {
 	m_codec_context->time_base       = (AVRational){1001, 30000};
 	m_codec_context->gop_size      = 200;
 	m_codec_context->pix_fmt       = m_pixel_format;
+
+    av_opt_set(m_codec_context->priv_data, "log", "3", 0);
 
 
 	m_format_context->bit_rate = 100;
