@@ -123,6 +123,7 @@ static const char* pict_type( int code ) {
 }
 
 void VideoEncoder::endOfVideo() {
+	newFrame( NULL );
 }
 
 void VideoEncoder::newFrame( AVFrame* frame ) {
@@ -130,7 +131,8 @@ void VideoEncoder::newFrame( AVFrame* frame ) {
 	AVPacket pkt = { 0 };
 	int ret;
 
-	XLOG_INFO( "Frame type %s", pict_type( frame->pict_type ) );
+	if ( frame )
+		XLOG_INFO( "Frame type %s", pict_type( frame->pict_type ) );
 
 	av_init_packet(&pkt);
 

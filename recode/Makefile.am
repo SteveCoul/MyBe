@@ -4,6 +4,7 @@ bin_PROGRAMS=recode
 recode_CXXFLAGS=
 recode_CXXFLAGS+=-I$(FFMPEG_INCLUDE_DIR)
 recode_SOURCES=
+recode_SOURCES+=AlternateVideoTask.cpp
 recode_SOURCES+=Options.cpp
 recode_SOURCES+=PAT.cpp
 recode_SOURCES+=PMT.cpp

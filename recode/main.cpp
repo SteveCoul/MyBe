@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
+#include "AlternateVideoTask.hpp"
 #include "Options.hpp"
 #include "PAT.hpp"
 #include "PMT.hpp"
@@ -12,54 +13,6 @@
 #include "VideoDecoder.hpp"
 #include "VideoEncoder.hpp"
 #include "xlog.hpp"
-
-class AlternateVideoTask : public VideoDecoder::Callback {
-public:
-	void videoIncoming( AVFrame* frame ) {
-        m_encoder->newFrame( frame );
-	}
-
-	void videoComplete() {
-		m_encoder->endOfVideo();
-	}
-
-	int run( TS* ts, unsigned int video_pid, unsigned int alternate_pid ) {
-		m_decoder = new VideoDecoder( ts, video_pid, this );
-		if ( m_decoder == NULL ) {
-			XLOG_ERROR("Failed to create video decoder" );
-			return -1;
-		}
-		if ( m_decoder->init() != 0 ) {
-			XLOG_ERROR("Failed to init video decoder" );
-			return -2;
-		}
-		m_encoder = new VideoEncoder( ts, alternate_pid, m_decoder->format(), m_decoder->width(), m_decoder->height(), m_decoder->timebase(), m_decoder->bitrate() );
-		if ( m_encoder == NULL ) {
-			XLOG_ERROR("Failed to create video encoder" );
-			return -1;
-		}
-		if ( m_encoder->init() != 0 ) {
-			XLOG_ERROR("Failed to init video encoder" );
-			return -2;
-		}
-		m_decoder->run();
-		delete m_decoder;
-		delete m_encoder;
-		return 0;
-	}
-private:
-	TS*				m_ts;
-	unsigned int	m_video_pid;
-	unsigned int	m_alternate_pid;
-	VideoDecoder*	m_decoder;
-	VideoEncoder*	m_encoder;
-};
-
-static
-int makeAlternateVideo( TS* ts, unsigned int video_pid, unsigned int alternate_pid ) {
-	AlternateVideoTask task;
-	return task.run( ts, video_pid, alternate_pid );
-}
 
 int main( int argc, char** argv ) {
 	xlog::init( argv[0] );
@@ -137,7 +90,7 @@ int main( int argc, char** argv ) {
 										/* FIXME really it needs to be an unused pid that is NOT in the PMT just to guard
 										   against PMT referencing PIDS not in the transport */
 
-										if ( makeAlternateVideo( &ts, video_pid, alternate_pid ) != 0 ) {
+										if ( AlternateVideoTask::make( &ts, video_pid, alternate_pid ) != 0 ) {
 											XLOG_ERROR( "Failed to make alternate video track" );
 											ret = 11;
 										} else {
