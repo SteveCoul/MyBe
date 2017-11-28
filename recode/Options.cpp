@@ -15,5 +15,6 @@ void Options::setDefault() {
 	m_source_filename = "input.ts";
 	m_dest_filename = "output.ts";
 	m_save_videos = true;
+	m_decode_videos = true;
 }
 

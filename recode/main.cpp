@@ -10,6 +10,7 @@
 #include "PAT.hpp"
 #include "PMT.hpp"
 #include "TS.hpp"
+#include "VideoDebugTask.hpp"
 #include "VideoDecoder.hpp"
 #include "VideoEncoder.hpp"
 #include "xlog.hpp"
@@ -61,6 +62,13 @@ private:
 		ofd = open( path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666 );
 		m_ts->writePIDStream( ofd, pid );
 		(void)close( ofd );
+	}
+
+	void decodeVideoStreamsAsRequired() {
+		if ( m_opts.decodeVideos() ) {
+			(void)VideoDebugTask::decode( m_ts, m_video_pid, "original_video" );
+			(void)VideoDebugTask::decode( m_ts, m_alternate_pid, "new_video" );
+		}
 	}
 
 	void saveVideoStreamsAsRequired() {
@@ -186,6 +194,7 @@ private:
 							ret = writeOutputFile();
 							if ( ret == 0 ) {
 								saveVideoStreamsAsRequired( );
+								decodeVideoStreamsAsRequired();
 							}
 						}
 					}

@@ -24,7 +24,7 @@ public:
 	std::string source() { return m_source_filename; }
 	std::string dest() { return m_dest_filename; }
 	bool saveVideos() { return m_save_videos; }
-
+	bool decodeVideos() { return m_decode_videos; }
 private:
 	int parse( int argc, char** argv );
 	void erase();
@@ -34,6 +34,7 @@ private:
 	std::string		m_source_filename;
 	std::string		m_dest_filename;
 	bool			m_save_videos;
+	bool			m_decode_videos;
 };
 
 #endif
