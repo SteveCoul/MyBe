@@ -25,6 +25,7 @@ public:
 	std::string dest() { return m_dest_filename; }
 	bool saveVideos() { return m_save_videos; }
 	bool decodeVideos() { return m_decode_videos; }
+	void dump();
 private:
 	int parse( int argc, char** argv );
 	void erase();
