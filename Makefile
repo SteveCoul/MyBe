@@ -1,4 +1,9 @@
 
+#VERSION_X264=ba24899b0bf23345921da022f7a51e0c57dbe73d
+#VERSION_FFMPEG=858db4b01fa2b55ee55056c033054ca54ac9b0fd
+VERSION_X264=master
+VERSION_FFMPEG=master
+
 THIRD_PARTY=$(PWD)/3rdParty
 
 # ---------------
@@ -67,7 +72,7 @@ $(X264_DIR)/.configured: $(X264_DIR)/configure $(HOST_DEPS)
 $(X264_DIR)/configure:
 	mkdir -p $(dir $@)
 	cd $(THIRD_PARTY) && git clone http://git.videolan.org/git/x264.git
-	cd $(X264_DIR) && git checkout ba24899b0bf23345921da022f7a51e0c57dbe73d
+	cd $(X264_DIR) && git checkout $(VERSION_X264)
 
 # ---------------
 
@@ -86,7 +91,7 @@ $(FFMPEG_DIR)/.configured: $(FFMPEG_DIR)/configure $(HOST_DEPS) $(THIRD_PARTY)/l
 $(FFMPEG_DIR)/configure:
 	mkdir -p $(dir $@)
 	cd $(THIRD_PARTY) && git clone https://git.ffmpeg.org/ffmpeg.git
-	cd $(FFMPEG_DIR) && git checkout 858db4b01fa2b55ee55056c033054ca54ac9b0fd
+	cd $(FFMPEG_DIR) && git checkout $(VERSION_FFMPEG)
 
 # ---------------
 
