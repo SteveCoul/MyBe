@@ -9,7 +9,7 @@ int VideoDecoder::avioread_wrapper(void *opaque, uint8_t *buf, int buf_size ) {
 
 int VideoDecoder::avioread( uint8_t* buf, int buf_size ) {
 
-	if ( m_next_packet == m_ts_stream->numPackets() ) return 0;
+	if ( m_next_packet == m_ts_stream->numPackets() ) return AVERROR_EOF;
 
 	TSPacket* pkt = m_ts_stream->packet( m_next_packet++ );
 
