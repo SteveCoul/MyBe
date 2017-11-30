@@ -1,14 +1,4 @@
 
-#if 0
-look at http://ffmpeg.org/doxygen/2.8/frame_8c.html#a52ecfa0b4c5c6b3c81faf25edb0b5dea
-
-for frame_copy_video.
-
-Create a pipeline class we call inside newFrame() where we pass it the current frame and it returns us one to encode that might be a copy of a previous image!
-
-
-#endif
-
 extern "C" {
 #include <libavutil/opt.h>
 };
@@ -47,6 +37,7 @@ VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format,
 	, m_bit_rate( bit_rate )
 	, m_io_context( NULL )
 	{
+	m_pipeline.reset( m_width, m_height, 1 );
 }
 
 VideoEncoder::~VideoEncoder() {
@@ -121,6 +112,10 @@ void VideoEncoder::newFrame( AVFrame* frame ) {
 	AVPacket pkt = { 0 };
 	int ret;
 
+	if ( m_pipeline.process( frame ) < 0 ) {
+		XLOG_ERROR( "Failed to process frame via image pipeline, continue with original data" );
+	}
+	
 	do {
 		av_init_packet(&pkt);
 

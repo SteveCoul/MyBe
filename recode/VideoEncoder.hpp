@@ -9,6 +9,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 };
 
+#include "ImagePipeline.hpp"
 #include "TS.hpp"
 
 class VideoEncoder {
@@ -23,6 +24,7 @@ private:
     void add_stream( enum AVCodecID codec_id);
 	int write( uint8_t* buf, int buf_size );
 private:
+	ImagePipeline			m_pipeline;
     AVOutputFormat*			m_output_format;
     AVFormatContext*		m_format_context;
     AVCodec*				m_codec;
