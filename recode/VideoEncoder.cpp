@@ -121,19 +121,21 @@ void VideoEncoder::newFrame( AVFrame* frame ) {
 	AVPacket pkt = { 0 };
 	int ret;
 
-	av_init_packet(&pkt);
+	do {
+		av_init_packet(&pkt);
 
-	ret = avcodec_encode_video2(m_codec_context, &pkt, frame, &got_packet);
-	if (ret < 0) {
-		XLOG_ERROR( "Error encoding video frame" );
-		return;
-	}
+		ret = avcodec_encode_video2(m_codec_context, &pkt, frame, &got_packet);
+		if (ret < 0) {
+			XLOG_ERROR( "Error encoding video frame" );
+			return;
+		}
 
-	if (got_packet) {
-		pkt.stream_index = m_stream->index;
-		ret = av_interleaved_write_frame(m_format_context, &pkt);
-		// ERROR CHECK
-	}
+		if (got_packet) {
+			pkt.stream_index = m_stream->index;
+			ret = av_interleaved_write_frame(m_format_context, &pkt);
+			// ERROR CHECK
+		}
+	} while ( got_packet && !frame );
 }
 
 void VideoEncoder::add_stream( enum AVCodecID codec_id) {
@@ -164,7 +166,7 @@ void VideoEncoder::add_stream( enum AVCodecID codec_id) {
 	m_codec_context->height   = m_height;
 	m_stream->time_base = m_time_base;
 	m_codec_context->time_base       = (AVRational){1001, 30000};
-	m_codec_context->gop_size      = 200;
+	m_codec_context->gop_size      = 99999;
 	m_codec_context->pix_fmt       = m_pixel_format;
 
     av_opt_set(m_codec_context->priv_data, "log", "3", 0);
