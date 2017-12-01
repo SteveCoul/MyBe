@@ -28,7 +28,7 @@ int VideoEncoder::write( uint8_t* buf, int buf_size ) {
 	return ret;
 }
 
-VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format, int width, int height, AVRational time_base, int64_t bit_rate )
+VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format, int width, int height, AVRational time_base, int64_t bit_rate, int opt_frames )
 	: m_ts( ts )
 	, m_pid( pid )
 	, m_pixel_format( format )
@@ -38,7 +38,8 @@ VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format,
 	, m_bit_rate( bit_rate )
 	, m_io_context( NULL )
 	{
-	m_pipeline.reset( m_width, m_height, 30 );
+	XLOG_INFO( "Encoder configured for %dx%d, approx bit rate %lld, frame control %d\n", width, height, bit_rate, opt_frames );
+	m_pipeline.reset( m_width, m_height, opt_frames );
 }
 
 VideoEncoder::~VideoEncoder() {
@@ -163,19 +164,18 @@ void VideoEncoder::add_stream( enum AVCodecID codec_id) {
 	}
 
 	m_codec_context->codec_id = codec_id;
-	m_codec_context->rc_max_rate = 2000;
-	m_codec_context->rc_buffer_size = 1*1024*1024;
+	m_codec_context->rc_max_rate = m_bit_rate;
+	m_codec_context->rc_min_rate = m_bit_rate;
+	m_codec_context->bit_rate = m_bit_rate;
+	m_codec_context->rc_buffer_size = m_bit_rate * 200; // HACK
 	m_codec_context->width    = m_width;
 	m_codec_context->height   = m_height;
 	m_stream->time_base = m_time_base;
-	m_codec_context->time_base       = (AVRational){1001, 30000};
+	m_codec_context->time_base       = (AVRational){1001, 30000};	// HACK : FIXME
 	m_codec_context->gop_size      = 99999;
 	m_codec_context->pix_fmt       = m_pixel_format;
 
     av_opt_set(m_codec_context->priv_data, "log", "3", 0);
-
-
-	m_format_context->bit_rate = 100;
 
 	/* Some formats want stream headers to be separate. */
 	if (m_format_context->oformat->flags & AVFMT_GLOBALHEADER)

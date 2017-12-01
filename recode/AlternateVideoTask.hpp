@@ -9,9 +9,9 @@ class AlternateVideoTask : public VideoDecoder::Callback {
 public:
 	void videoIncoming( AVFrame* frame );
 	void videoComplete();
-	int run( TS* ts, unsigned int video_pid, unsigned int alternate_pid );
+	int run( TS* ts, unsigned int video_pid, unsigned int alternate_pid, int opt_frames, int opt_rate );
 public:
-	static int make( TS* ts, unsigned int video_pid, unsigned int alternate_pid );
+	static int make( TS* ts, unsigned int video_pid, unsigned int alternate_pid, int opt_frames, int opt_rate );
 private:
 	TS*				m_ts;
 	unsigned int	m_video_pid;

@@ -30,6 +30,7 @@ public:
 	int height();
 	AVRational timebase();
 	int64_t bitrate();
+	int approxFPS();
 private:
     Callback*               m_callback;
     AVFormatContext*        m_format_context;
@@ -49,6 +50,7 @@ private:
 	TS::Stream*				m_ts_stream;
 	AVRational				m_time_base;
 	int64_t					m_bit_rate;
+	int						m_approx_fps;
 };
 
 #endif
