@@ -25,8 +25,8 @@ public:
 	std::string dest() { return m_dest_filename; }
 	bool saveVideos() { return m_save_videos; }
 	bool decodeVideos() { return m_decode_videos; }
-	void dump();
-	int param() { return m_param; }
+	int frames() { return m_frames; }
+	int rate() { return m_rate; }
 
 private:
 	int parse( int argc, char** argv );
@@ -38,7 +38,8 @@ private:
 	std::string		m_dest_filename;
 	bool			m_save_videos;
 	bool			m_decode_videos;
-	int				m_param;
+	int				m_frames;
+	int				m_rate;
 };
 
 #endif
