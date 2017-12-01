@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include "Options.hpp"
 
 #include "xlog.hpp"
@@ -46,6 +48,10 @@ int Options::parse( int argc, char** argv ) {
 				m_source_filename = argv[1];
 				skip = true;
 				break;
+			case 'p':
+				m_param = atoi( argv[1] );
+				skip = true;
+				break;
 			default:
 				sprintf( error_text, "%s invalid", argv[0] );
 				rc = -1;
@@ -67,6 +73,7 @@ int Options::parse( int argc, char** argv ) {
 		fprintf( stderr, "    -i <name>       Set input name [default: %s]\n", m_source_filename.c_str() );
 		fprintf( stderr, "    -s              Save intermediate video streams\n" );
 		fprintf( stderr, "    -d              Decode intermediate video streams\n" );
+		fprintf( stderr, "    -p <value>      Alternate stream parameter [default: %d]\n", m_param );
 		fprintf( stderr, "\n" );
 		if ( error_text[0] != '\0' ) fprintf( stderr, "Error: %s\n", error_text );
 	}
@@ -81,6 +88,7 @@ void Options::setDefault() {
 	m_dest_filename = "output.ts";
 	m_save_videos = false;
 	m_decode_videos = false;
+	m_param = 10;
 }
 
 void Options::dump() {
@@ -89,5 +97,6 @@ void Options::dump() {
 	XLOG_INFO( "destination filename %s", m_dest_filename.c_str() );
 	XLOG_INFO( "Save Videos? %s", m_save_videos ? "Y" : "n" );
 	XLOG_INFO( "Decode Videos? %s", m_decode_videos ? "Y" : "n" );
+	XLOG_INFO( "Alternate encode parameter %d", m_param );
 }
 

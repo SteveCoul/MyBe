@@ -26,6 +26,8 @@ public:
 	bool saveVideos() { return m_save_videos; }
 	bool decodeVideos() { return m_decode_videos; }
 	void dump();
+	int param() { return m_param; }
+
 private:
 	int parse( int argc, char** argv );
 	void erase();
@@ -36,6 +38,7 @@ private:
 	std::string		m_dest_filename;
 	bool			m_save_videos;
 	bool			m_decode_videos;
+	int				m_param;
 };
 
 #endif
