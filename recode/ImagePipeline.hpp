@@ -16,6 +16,7 @@ public:
 	~ImagePipeline();
 	void reset( unsigned int width, unsigned int height, unsigned int depth );
 	int process( AVFrame* frame );
+	void restore( AVFrame* frame );
 private:
 };
 

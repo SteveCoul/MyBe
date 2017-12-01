@@ -3,6 +3,7 @@ extern "C" {
 #include <libavutil/opt.h>
 };
 
+#include "Options.hpp"
 #include "VideoEncoder.hpp"
 
 #include "xlog.hpp"
@@ -37,7 +38,7 @@ VideoEncoder::VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format,
 	, m_bit_rate( bit_rate )
 	, m_io_context( NULL )
 	{
-	m_pipeline.reset( m_width, m_height, 1 );
+	m_pipeline.reset( m_width, m_height, 30 );
 }
 
 VideoEncoder::~VideoEncoder() {
@@ -79,6 +80,7 @@ int VideoEncoder::init() {
 	m_output_format = m_format_context->oformat;
 
 	m_output_format->video_codec = AV_CODEC_ID_H264;
+	//m_output_format->video_codec = AV_CODEC_ID_MPEG4;
 
 	add_stream( m_output_format->video_codec);
 
@@ -112,8 +114,10 @@ void VideoEncoder::newFrame( AVFrame* frame ) {
 	AVPacket pkt = { 0 };
 	int ret;
 
-	if ( m_pipeline.process( frame ) < 0 ) {
-		XLOG_ERROR( "Failed to process frame via image pipeline, continue with original data" );
+	if ( frame ) {
+		if ( m_pipeline.process( frame ) < 0 ) {
+			XLOG_ERROR( "Failed to process frame via image pipeline, continue with original data" );
+		}
 	}
 	
 	do {
@@ -131,6 +135,9 @@ void VideoEncoder::newFrame( AVFrame* frame ) {
 			// ERROR CHECK
 		}
 	} while ( got_packet && !frame );
+
+	if ( frame )
+		m_pipeline.restore( frame );
 }
 
 void VideoEncoder::add_stream( enum AVCodecID codec_id) {
@@ -156,7 +163,8 @@ void VideoEncoder::add_stream( enum AVCodecID codec_id) {
 	}
 
 	m_codec_context->codec_id = codec_id;
-	m_codec_context->bit_rate = m_bit_rate == 0 ? 1000 : m_bit_rate;
+	m_codec_context->rc_max_rate = 2000;
+	m_codec_context->rc_buffer_size = 1*1024*1024;
 	m_codec_context->width    = m_width;
 	m_codec_context->height   = m_height;
 	m_stream->time_base = m_time_base;
