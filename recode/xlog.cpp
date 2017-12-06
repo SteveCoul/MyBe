@@ -42,7 +42,7 @@ void hexdump( int level, const char* function, int line, const char* prefix, con
 				p+=sprintf( p, "%02X ", ptr[i] ); 
 			else 
 				p+=sprintf( p, "   " );		
-			if ( i == 8 ) p+=sprintf( p, " " );
+			if ( i == 7 ) p+=sprintf( p, " " );
 		}
 		p+=sprintf( p, "| " );
 		for ( int i = 0; i < 16; i++ ) {

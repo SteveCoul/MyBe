@@ -6,6 +6,7 @@
 #include <sys/mman.h>
 
 #include "AlternateVideoTask.hpp"
+#include "Misc.hpp"
 #include "Options.hpp"
 #include "PAT.hpp"
 #include "PMT.hpp"
@@ -190,6 +191,9 @@ int Main::run( int argc, char** argv ) {
 						XLOG_ERROR( "Failed to make alternate video track" );
 						ret = 11;
 					} else {
+
+						Misc::pesScan( m_ts->stream( m_video_pid ), this );
+
 						ret = writeOutputFile();
 						if ( ret == 0 ) {
 							saveVideoStreamsAsRequired( );
@@ -203,4 +207,7 @@ int Main::run( int argc, char** argv ) {
 	return ret;
 }
 
+void Main::pesCallback( PES* pes ) {
+	pes->dump();
+}
 

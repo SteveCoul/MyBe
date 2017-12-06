@@ -4,10 +4,11 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "Misc.hpp"
 #include "Options.hpp"
 #include "TS.hpp"
 
-class Main {
+class Main : public Misc::PESCallback {
 public:
 	static int main( int argc, char** argv );
 private:
@@ -21,6 +22,7 @@ private:
 	bool findAndDecodePMT();
 	int writeOutputFile();
 	int run( int argc, char** argv );
+	void pesCallback( PES* pes );
 private:
 	Options			m_opts;
 	unsigned int	m_video_pid;

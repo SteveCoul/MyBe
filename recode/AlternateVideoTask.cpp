@@ -41,6 +41,7 @@ int AlternateVideoTask::run( TS* ts, unsigned int video_pid, unsigned int altern
 	m_decoder->run();
 	delete m_decoder;
 	delete m_encoder;
+
 	return 0;
 }
 
