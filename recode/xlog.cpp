@@ -16,7 +16,7 @@ void out( int level, const char* function, int line, const char* prefix, const c
 	std::string output;
 	output.append( prefix );
 	output.append( function );
-	output.append( "() -- " );
+	output.append( " -- " );
 	output.append( fmt );
 	output.append( suffix );
 
