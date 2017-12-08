@@ -26,4 +26,19 @@ void Misc::pesScan( TS::Stream* stream, Misc::PESCallback* cb ) {
 	}
 };
 
+unsigned long long Misc::mpegTimestampFromBytes( const uint8_t* ptr ) {
+	unsigned long long b32_30 = ( ptr[0] >> 1 ) & 7;
+	unsigned long long b29_23 = ( ptr[1] );
+	unsigned long long b22_15 = ( ptr[2] >> 1 ) & 127;
+	unsigned long long b14_8 = ( ptr[3] );
+	unsigned long long b7_0 = ( ptr[4] >> 1 ) & 127;
+
+	b32_30 <<= 30;
+	b29_23 <<= 23;
+	b22_15 <<= 15;
+	b14_8 <<= 8;
+
+	return b32_30 | b29_23 | b22_15 | b14_8 | b7_0;
+
+}
 

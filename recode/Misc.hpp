@@ -17,6 +17,7 @@ private:
 	Misc() { }
 public:
 	static void pesScan( TS::Stream* stream, Misc::PESCallback* cb );
+	static unsigned long long mpegTimestampFromBytes( const uint8_t* ptr );
 };
 
 #endif
