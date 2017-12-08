@@ -19,7 +19,6 @@ void out( int level, const char* function, int line, const char* prefix, const c
 	output.append( " -- " );
 	output.append( fmt );
 	output.append( suffix );
-
 	va_list arg;
 	va_start( arg, fmt );
 	vsyslog( level, output.c_str(), arg );
@@ -54,7 +53,7 @@ void hexdump( int level, const char* function, int line, const char* prefix, con
 		ptr += 16;	
 		o += 16;
 		if ( length >= 16 ) length-=16; else length = 0;
-		out( level, function, line, prefix, suffix, buffer );
+		out( level, function, line, prefix, suffix, "%s", buffer );
 	}
 }
 
