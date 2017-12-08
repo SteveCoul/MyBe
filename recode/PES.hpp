@@ -6,7 +6,7 @@
 
 class PES { 
 public:
-	PES( const uint8_t* ptr, size_t len );
+	PES( const uint8_t* ptr, size_t len, const uint32_t* map = NULL );
 	~PES();
 	void dump();
 	bool checkStartCode() { return ( ( m_len > 3 ) && ( m_ptr[0] == 0x00 ) && ( m_ptr[1] == 0x00 ) && ( m_ptr[2] == 0x01 ) ); }
@@ -22,9 +22,11 @@ public:
 	const uint8_t* payload( size_t* p_size = NULL ) { if ( p_size ) p_size[0] = m_payload_length; return m_payload; }
 	unsigned long long PTS() { return m_PTS; }
 	unsigned long long DTS() { return m_DTS; }
+	unsigned long long map( unsigned long offset ) { return m_map[offset]; }
 private:
 	const uint8_t*	m_ptr;
 	size_t			m_len;
+	const uint32_t*	m_map;
 	unsigned int	m_streamId;
 	unsigned int	m_length;
 	unsigned int	m_scrambling_control;

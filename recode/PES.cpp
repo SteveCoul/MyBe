@@ -4,9 +4,10 @@
 
 #include "PES.hpp"
 
-PES::PES( const uint8_t* ptr, size_t len )
+PES::PES( const uint8_t* ptr, size_t len, const uint32_t* map )
 	: m_ptr( ptr )
 	, m_len( len )
+	, m_map( map )
 	, m_streamId( 0 )
 	, m_length( 0 )
 	, m_scrambling_control( 0 )

@@ -14,6 +14,7 @@ public:
 	bool pusi();
 	bool hasPayload();
 	bool hasAdaptation();
+	unsigned int headerLen();
 	const uint8_t* getPayload( size_t* p_size );
 	int write( int fd );
 	const uint8_t* ptr();

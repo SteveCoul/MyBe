@@ -210,9 +210,6 @@ int Main::run( int argc, char** argv ) {
 void Main::pesCallback( PES* pes ) {
 	size_t ps;
 	(void)pes->payload( &ps );
-#if 0
-	XLOG_INFO( "%d : PTS %llu, DTS %llu : %p %d", pes->streamId(), pes->PTS(), pes->DTS(), pes->payload(), ps );
-	pes->dump();
-#endif
+	XLOG_INFO( "%d : PTS %llu, DTS %llu : %p %d : %u", pes->streamId(), pes->PTS(), pes->DTS(), pes->payload(), ps, pes->map(0) );
 }
 

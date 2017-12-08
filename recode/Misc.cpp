@@ -8,21 +8,29 @@
 
 void Misc::pesScan( TS::Stream* stream, Misc::PESCallback* cb ) {
 	std::vector<uint8_t> pes;
+	std::vector<uint32_t> pes_offset;
+
 	for ( unsigned int i = 0; i < stream->numPackets(); i++ ) {
 		TSPacket* p = stream->packet(i);
 
 		if ( p->pusi() ) {
 			if ( !pes.empty() ) {	
-				PES* c = new PES( pes.data(), pes.size() );
+				PES* c = new PES( pes.data(), pes.size(), pes_offset.data() );
 				cb->pesCallback( c );
 				delete c;
 			}
 			pes.clear();
+			pes_offset.clear();
 		}
 
 		size_t len;
 		const uint8_t* r = p->getPayload( &len );
 		pes.insert( pes.end(), r, r+len );
+
+		unsigned int offset = ( i * 188 ) + p->headerLen();
+		for ( unsigned int j = 0; j < len; j++ ) {
+			pes_offset.push_back( offset++ );
+		}
 	}
 };
 

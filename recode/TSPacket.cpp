@@ -42,6 +42,14 @@ bool TSPacket::pusi() { return ( ( m_raw_data[1] & 0x40 ) == 0x40 ); }
 bool TSPacket::hasPayload() { return ( ( m_raw_data[3] & 0x10 ) == 0x10 ); }
 bool TSPacket::hasAdaptation() { return ( ( m_raw_data[3] & 0x20 ) == 0x20 ); }
 
+unsigned int TSPacket::headerLen() {
+	unsigned int rc = 4;
+	if ( hasAdaptation() ) {
+		rc = rc + m_raw_data[4] + 1;
+	}
+	return rc;
+}
+
 const uint8_t* TSPacket::getPayload( size_t* p_size ) {
 	const uint8_t* p;
 	size_t l;
