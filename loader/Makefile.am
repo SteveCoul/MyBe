@@ -9,4 +9,8 @@ bin_PROGRAMS=loader_test
 loader_test_CXXFLAGS=
 loader_test_SOURCES=loader_test.cpp
 loader_test_LDADD=libMyBeLoader.la
+loader_test_LDFLAGS=-lcurl
+
+bin_PROGRAMS=referencedecoder_test
+referencedecoder_test_SOURCES=referencedecoder_test.cpp
 
