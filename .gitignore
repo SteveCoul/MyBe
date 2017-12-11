@@ -1,2 +1,12 @@
+3rdParty
+OSX.deps
 config.log
+*.ts
+
+recode/*.o
+recode/recode
+
+loader/*.o
+loader/libMyBeLoader.la
+loader/loader_test
 
