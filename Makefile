@@ -8,13 +8,15 @@ THIRD_PARTY=$(PWD)/3rdParty
 
 # ---------------
 
-all: recode/.configured
+all: recode/.configured loader/.configured 
 	PATH=$(DEPS_PATH):$(PATH) $(MAKE) -C recode 
+	PATH=$(DEPS_PATH):$(PATH) $(MAKE) -C loader
 
 clean: clean_deps
 	rm -rf $(THIRD_PARTY)
 	rm -rf *.dSYM
 	$(MAKE) -C recode clean
+	$(MAKE) -C loader clean
 
 # ---------------
 
@@ -52,6 +54,15 @@ recode/.configured: recode/configure $(THIRD_PARTY)/bin/ffmpeg
 
 recode/configure: 
 	cd recode && PATH=$(DEPS_PATH):$(PATH) autoreconf -i
+
+# ---------------
+
+loader/.configured: loader/configure 
+	cd loader && PATH=$(DEPS_PATH):$(PATH) ./configure 
+	touch $@
+
+loader/configure: 
+	cd loader && PATH=$(DEPS_PATH):$(PATH) autoreconf -i
 
 # ---------------
 
