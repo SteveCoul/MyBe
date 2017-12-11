@@ -1,6 +1,12 @@
 
+lib_LTLIBRARIES=libMyBeLoader.la
+
+libMyBeLoader_la_CXXFLAGS=-I.
+libMyBeLoader_la_SOURCES=MyBeLoader.cpp
+
 bin_PROGRAMS=loader_test
 
 loader_test_CXXFLAGS=
 loader_test_SOURCES=loader_test.cpp
+loader_test_LDADD=libMyBeLoader.la
 
