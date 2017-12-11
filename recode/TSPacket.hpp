@@ -6,6 +6,7 @@
 
 class TSPacket {
 public:
+	static TSPacket* create( unsigned int pid, unsigned int cc, const void* payload, size_t payload_size );
 	TSPacket( const void* data, bool copy = true );
 	~TSPacket();
 	bool isvalid();

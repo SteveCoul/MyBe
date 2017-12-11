@@ -21,6 +21,7 @@ PES::PES( const uint8_t* ptr, size_t len, const uint32_t* map )
 	, m_payload_length( 0 )
 	, m_PTS( 0 )
 	, m_DTS( 0 )
+	, m_payload_offset( 0 )
 	{
 
 	// PES Header
@@ -84,6 +85,8 @@ PES::PES( const uint8_t* ptr, size_t len, const uint32_t* map )
 
 	ptr += pes_header_length;
 	len -= pes_header_length;
+
+	m_payload_offset = ptr - m_ptr;
 
 	m_payload = ptr;
 	m_payload_length = ( m_length == 0 ) ? len : m_length;

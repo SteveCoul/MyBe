@@ -6,6 +6,22 @@
 
 #include "xlog.hpp"
 
+TSPacket* TSPacket::create( unsigned int pid, unsigned int cc, const void* payload, size_t payload_size ) {
+	if ( payload_size > 184 ) {
+		XLOG_ERROR("too big");
+		return NULL;
+	}
+
+	uint8_t p[188];
+	memset( p, 0xFF, 188 );
+	memcpy( p+4, payload, payload_size );
+	p[0] = 0x47;
+	p[1] = ( pid >> 8 ) & 0x1F;
+	p[2] = ( pid & 0xFF );
+	p[3] = 0x10 | ( cc & 0x0F );
+	return new TSPacket( p, true );
+}
+
 TSPacket::TSPacket( const void* data, bool copy ) {
 	m_copied = false;
 

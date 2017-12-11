@@ -59,9 +59,23 @@ unsigned int TS::getUnusedPID( int lowest ) {
 	return rc;
 }
 
-int TS::writePIDStream( int fd, unsigned pid ) {
-	for ( std::vector<TSPacket*>::const_iterator it = m_packets_by_pid[pid].begin(); it != m_packets_by_pid[pid].end(); ++it )
-		(*it)->write( fd );
-	return 0;
+size_t TS::sizePIDStream( unsigned pid ) {
+	return m_packets_by_pid[pid].size() * 188;
 }
 
+int TS::writePIDStream( int fd, unsigned pid, int skip, int count ) {
+	int rc = 0;
+	if ( m_packets_by_pid[pid].size() ) {
+		int toskip = skip > 0 ? skip : 0;
+		int todo = count > 0 ? count : m_packets_by_pid[pid].size() - toskip;
+		for ( std::vector<TSPacket*>::const_iterator it = m_packets_by_pid[pid].begin(); it != m_packets_by_pid[pid].end(); ++it ) {
+			if ( toskip ) toskip--;
+			else if ( todo ) {
+				(*it)->write( fd );
+				rc += 188;
+				todo--;
+			}
+		}
+	}
+	return rc;
+}

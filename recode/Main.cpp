@@ -1,4 +1,4 @@
-
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
@@ -6,6 +6,7 @@
 #include <sys/mman.h>
 
 #include "AlternateVideoTask.hpp"
+#include "FindIDRTask.hpp"
 #include "Misc.hpp"
 #include "Options.hpp"
 #include "PAT.hpp"
@@ -133,33 +134,86 @@ bool Main::findAndDecodePMT() {
 	return rc;
 }
 
-int Main::writeOutputFile() {
+int Main::writeOutputFile( unsigned int iframe_original_len, unsigned int iframe_alternate_len ) {
 	int rc;
 	/* Now we write our new output stream,
 		PAT
 		PMT
+		My Magic Description Header
 		Anything other than magic or video
 		Enough video for first IFrame
 		magic
 		video */
-	int ofd = open( m_opts.dest().c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666 );
-	if ( ofd < 0 ) {
-		XLOG_ERROR( "Failed to open dest %s [ %s ]", m_opts.dest().c_str(), strerror(errno) );
-		rc = 12;
+
+	// FIXME. Eventually, I'll want to remove the first iframe from the alternate video chunk,
+	//		  but for now I'll just remember the byte offset into that pid stream and store it
+	//		  in the header.
+
+	unsigned int l_misc_length = 0;			/* Length of magic header, PAT, PMT and non video segments */
+	unsigned int l_first_iframe_keep = 0;	/* How much of the first video IFrame data needs to be kept for alternate stream */
+	unsigned int l_alternate_total = 0;		/* Total length of alternate stream */
+	unsigned int l_alternate_iframe_length = 0;	/* How much of alternate stream need be discarded to jump first iframe */
+
+	if ( iframe_original_len % 188 ) XLOG_WARNING("Original Video IFrame does not fix exactly into TS frames for now - loader will have to cope");
+	if ( iframe_alternate_len % 188 ) XLOG_WARNING("Alternate Video IFrame does not fix exactly into TS frames for now - loader will have to cope");
+	XLOG_WARNING("Warning - Alternate video stream currently contains the IFrame and it should not");
+
+	for ( unsigned int i = 0; i < 8192; i++ ) 
+		if ( ( i != 0 ) && ( i != m_pmt_pid ) && ( i != m_video_pid ) && ( i != m_alternate_pid ) )
+			l_misc_length += m_ts->sizePIDStream( i );
+	l_first_iframe_keep = iframe_original_len;
+	l_alternate_total = m_ts->sizePIDStream( m_alternate_pid );
+	l_alternate_iframe_length = iframe_alternate_len;
+
+	char header[180];
+	int len = snprintf( header, sizeof(header), "# MakeYourBestEffort\nMiscLength=%u\nFirstIFrameKeep=%u\nAlternateTotal=%u\nAlternateIFrameLength=%u\n", l_misc_length, l_first_iframe_keep, l_alternate_total, l_alternate_iframe_length );
+
+	XLOG_INFO( "iframe_original_len %u, iframe_alternate_len %u", iframe_original_len, iframe_alternate_len );
+
+	if ( len >= sizeof(header) ) {
+		XLOG_ERROR("Magic header too big" );
+		rc = -1;
 	} else {
-		m_ts->writePIDStream( ofd, 0 );
-		m_ts->writePIDStream( ofd, m_pmt_pid );
-		for ( unsigned int i = 0; i < 8192; i++ ) 
-			if ( ( i != 0 ) && ( i != m_pmt_pid ) && ( i != m_video_pid ) && ( i != m_alternate_pid ) )
-				m_ts->writePIDStream( ofd, i );
+		XLOG_INFO( "%s", header );
+		int ofd = open( m_opts.dest().c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666 );
+		if ( ofd < 0 ) {
+			XLOG_ERROR( "Failed to open dest %s [ %s ]", m_opts.dest().c_str(), strerror(errno) );
+			rc = -2;
+		} else {
+			unsigned int written = 0;
 
-		/* The FIXMEs below are to do with sharing the first Iframe instead of duplicating it */
+			XLOG_INFO( "%u written - write PAT", written );
+			written+= m_ts->writePIDStream( ofd, 0 );
 
-		// FIXME need to write the first IFrames worth of video 
-		m_ts->writePIDStream( ofd, m_alternate_pid );	// FIXME don't write 1st Iframe
-		m_ts->writePIDStream( ofd, m_video_pid );		// FIXME don't write 1st Iframe 
-		(void)close( ofd );
-		rc = 0;
+			XLOG_INFO( "%u written - write PMT", written );
+			written+= m_ts->writePIDStream( ofd, m_pmt_pid );
+
+			TSPacket* m = TSPacket::create( 8191, 0, header, len );
+
+			XLOG_INFO( "%u written - write Magic", written );
+			written+=m->write( ofd );
+
+			delete m;
+
+			XLOG_INFO( "%u written - write Stuff", written );
+			for ( unsigned int i = 0; i < 8192; i++ ) 
+				if ( ( i != 0 ) && ( i != m_pmt_pid ) && ( i != m_video_pid ) && ( i != m_alternate_pid ) )
+					written+= m_ts->writePIDStream( ofd, i );
+
+			unsigned int iframe_packets = ( iframe_original_len + 187 ) / 188;
+
+			XLOG_INFO( "iframe_packets %u", iframe_packets );
+
+			XLOG_INFO( "%u written - write iframe", written );
+			written+=m_ts->writePIDStream( ofd, m_video_pid, 0, iframe_packets );	
+			XLOG_INFO( "%u written - write alternate", written );
+			written+=m_ts->writePIDStream( ofd, m_alternate_pid );
+			XLOG_INFO( "%u written - write original", written );
+			written+=m_ts->writePIDStream( ofd, m_video_pid, iframe_packets, -1 );	
+			XLOG_INFO( "%u written - done", written );
+			(void)close( ofd );
+			rc = written;
+		}
 	}
 	return rc;
 }
@@ -192,12 +246,17 @@ int Main::run( int argc, char** argv ) {
 						ret = 11;
 					} else {
 
-						Misc::pesScan( m_ts->stream( m_video_pid ), this );
+						FindIDRTask findVideo;
+						Misc::pesScan( m_ts->stream( m_video_pid ), this, &findVideo );
 
-						ret = writeOutputFile();
-						if ( ret == 0 ) {
+						FindIDRTask findAlternate;
+						Misc::pesScan( m_ts->stream( m_alternate_pid ), this, &findAlternate );
+
+						ret = writeOutputFile( findVideo.result(), findAlternate.result() );
+						if ( ret > 0 ) {
 							saveVideoStreamsAsRequired( );
 							decodeVideoStreamsAsRequired();
+							XLOG_INFO( "Initial Segment was %u, new segment %u", (unsigned)m_raw_size, (unsigned)ret );
 						}
 					}
 				}
@@ -207,9 +266,9 @@ int Main::run( int argc, char** argv ) {
 	return ret;
 }
 
-void Main::pesCallback( PES* pes ) {
-	size_t ps;
-	(void)pes->payload( &ps );
-	XLOG_INFO( "%d : PTS %llu, DTS %llu : %p %d : %u", pes->streamId(), pes->PTS(), pes->DTS(), pes->payload(), ps, pes->map(0) );
+void Main::pesCallback( void* opaque, PES* pes ) {
+	FindIDRTask* f = (FindIDRTask*)opaque;
+	f->pes( pes );
 }
+
 

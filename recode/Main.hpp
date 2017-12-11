@@ -20,9 +20,9 @@ private:
 	void saveVideoStreamsAsRequired();
 	bool findAndDecodePAT();
 	bool findAndDecodePMT();
-	int writeOutputFile();
+	int writeOutputFile( unsigned int iframe_original_len, unsigned int iframe_alternate_len );
 	int run( int argc, char** argv );
-	void pesCallback( PES* pes );
+	void pesCallback( void* opaque, PES* pes );
 private:
 	Options			m_opts;
 	unsigned int	m_video_pid;

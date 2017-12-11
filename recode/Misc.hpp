@@ -11,12 +11,12 @@ class Misc {
 public:
 	class PESCallback {
 	public:
-		virtual void pesCallback( PES* pes ) = 0;
+		virtual void pesCallback( void* opaque, PES* pes ) = 0;
 	};
 private:
 	Misc() { }
 public:
-	static void pesScan( TS::Stream* stream, Misc::PESCallback* cb );
+	static void pesScan( TS::Stream* stream, Misc::PESCallback* cb, void* opaque = NULL );
 	static unsigned long long mpegTimestampFromBytes( const uint8_t* ptr );
 };
 

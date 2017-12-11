@@ -22,7 +22,7 @@ public:
 	const uint8_t* payload( size_t* p_size = NULL ) { if ( p_size ) p_size[0] = m_payload_length; return m_payload; }
 	unsigned long long PTS() { return m_PTS; }
 	unsigned long long DTS() { return m_DTS; }
-	unsigned long long map( unsigned long offset ) { return m_map[offset]; }
+	unsigned long long map( unsigned long offset ) { return m_map[offset] + m_payload_offset; }
 private:
 	const uint8_t*	m_ptr;
 	size_t			m_len;
@@ -40,6 +40,7 @@ private:
 	size_t			m_payload_length;
 	unsigned long long	m_PTS;
 	unsigned long long	m_DTS;
+	unsigned int m_payload_offset;
 };
 
 #endif

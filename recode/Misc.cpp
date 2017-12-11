@@ -6,7 +6,7 @@
 
 #include "Misc.hpp"
 
-void Misc::pesScan( TS::Stream* stream, Misc::PESCallback* cb ) {
+void Misc::pesScan( TS::Stream* stream, Misc::PESCallback* cb, void* opaque ) {
 	std::vector<uint8_t> pes;
 	std::vector<uint32_t> pes_offset;
 
@@ -16,7 +16,7 @@ void Misc::pesScan( TS::Stream* stream, Misc::PESCallback* cb ) {
 		if ( p->pusi() ) {
 			if ( !pes.empty() ) {	
 				PES* c = new PES( pes.data(), pes.size(), pes_offset.data() );
-				cb->pesCallback( c );
+				cb->pesCallback( opaque, c );
 				delete c;
 			}
 			pes.clear();
