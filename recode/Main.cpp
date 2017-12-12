@@ -168,6 +168,8 @@ int Main::writeOutputFile( unsigned int iframe_original_len, unsigned int iframe
 	char header[180];
 	int len = snprintf( header, sizeof(header), "# MakeYourBestEffort\nMiscLength=%u\nFirstIFrameKeep=%u\nAlternateTotal=%u\nAlternateIFrameLength=%u\n", l_misc_length, l_first_iframe_keep, l_alternate_total, l_alternate_iframe_length );
 
+	len++;
+
 	XLOG_INFO( "iframe_original_len %u, iframe_alternate_len %u", iframe_original_len, iframe_alternate_len );
 
 	if ( len >= sizeof(header) ) {
