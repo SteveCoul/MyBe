@@ -122,7 +122,10 @@ int VideoDecoder::init() {
 
 	XLOG_INFO( "stream avg frame rate %d:%d", m_stream->avg_frame_rate.num, m_stream->avg_frame_rate.den );
 
-	m_approx_fps = (int)( (m_stream->avg_frame_rate.num+(m_stream->avg_frame_rate.den/2)) / m_stream->avg_frame_rate.den );
+	if ( m_stream->avg_frame_rate.den == 0 ) 
+		m_approx_fps = 0;
+	else 
+		m_approx_fps = (int)( (m_stream->avg_frame_rate.num+(m_stream->avg_frame_rate.den/2)) / m_stream->avg_frame_rate.den );
 
 	if (!m_frame) {
 		XLOG_ERROR( "Could not allocate frame");
