@@ -18,6 +18,10 @@ public:
 		, m_size_video_no(0)
 		, m_video_single(NULL)
 		, m_size_video_single(0)
+		, m_video_alternate(NULL)
+		, m_size_video_alternate(0)
+		, m_video_full( NULL )
+		, m_size_video_full(0)
 		{
 		fprintf( stderr, "Created ReferenceDecoder\n" );
 	}
@@ -25,6 +29,8 @@ public:
 	~ReferenceDecoder() {
 		if ( m_video_no ) delete[] m_video_no;
 		if ( m_video_single ) delete[] m_video_single;
+		if ( m_video_alternate ) delete[] m_video_alternate;
+		if ( m_video_full ) delete[] m_video_full;
 		fprintf( stderr, "Destroyed ReferenceDecoder\n" );
 	}
 
@@ -103,13 +109,100 @@ public:
 	}
 
 	void* generateAlternateVideo( size_t* p_length ) {
+
+		/* For now, just output the alternate stream, later I want to stitch the original iframe on the bulk of the alternate */
+
+		if ( m_video_alternate ) {
+			p_length[0] = m_size_video_alternate;
+			return m_video_alternate;
+		}
+
 		if ( !decodeHeader() ) return NULL;
-		return NULL;
+
+		// FIXME : need to fill over or otherwise null out any bytes in the last frame not part of the IFRAME sequence
+
+		size_t out_len = m_misc_length + m_header_size + (((m_first_iframe_keep+187)/188)*188) + m_alternate_total;
+
+		if ( m_source.size() < (out_len+188) ) {
+			fprintf( stderr, "not enough data to generate ALTERNATE stream\n" );
+			return NULL;
+		}
+
+		out_len -= (((m_first_iframe_keep+187)/188)*188);
+
+		m_size_video_alternate = out_len;
+		m_video_alternate = new uint8_t[ out_len ];
+
+		uint8_t* src = (uint8_t*)m_source.data();
+		uint8_t* dst = m_video_alternate;
+
+		memmove( dst, src, m_header_size );
+		dst+=m_header_size;
+		src+=m_header_size;
+		src+=188;
+		memmove( dst, src, m_misc_length );
+		dst+=m_misc_length;
+		src+=m_misc_length;
+
+		src+=(((m_first_iframe_keep+187)/188)*188);
+
+		unsigned offset = (unsigned)(src-(uint8_t*)m_source.data());
+
+		fprintf( stderr, "Alternate video found in source, offset %u [%x], size %u [%x]\n", offset, offset, m_alternate_total, m_alternate_total );
+		memmove( dst, src, m_alternate_total );
+		
+		for ( unsigned int i = 0; i < m_alternate_total; i+=188 ) {
+			// HACK!
+			dst[i+1] = ( dst[i+1] & 0xE0 ) | ( ( 257 >> 8 ) & 0x1F );
+			dst[i+2] = 257 & 0xFF;
+		}
+
+		p_length[0] = m_size_video_alternate;
+		return m_video_alternate;
 	}
 
 	void* generateFullVideo( size_t* p_length ) {
+
+		if ( m_video_full ) {
+			p_length[0] = m_size_video_full;
+			return m_video_full;
+		}
+
 		if ( !decodeHeader() ) return NULL;
-		return NULL;
+
+		size_t out_len = m_source.size() - 188 - m_alternate_total;
+
+		if ( m_source.size() < (out_len+188) ) {
+			fprintf( stderr, "not enough data to generate FULL stream\n" );
+			return NULL;
+		}
+
+		m_size_video_full = out_len;
+		m_video_full = new uint8_t[ out_len ];
+
+		uint8_t* src = (uint8_t*)m_source.data();
+		uint8_t* dst = m_video_full;
+
+		memmove( dst, src, m_header_size );
+		dst+=m_header_size;
+		src+=m_header_size;
+		src+=188;
+		memmove( dst, src, m_misc_length );
+		dst+=m_misc_length;
+		src+=m_misc_length;
+
+		unsigned iframe = (((m_first_iframe_keep+187)/188)*188);
+
+		memmove( dst, src, iframe );
+		dst+=iframe;
+		src+=iframe;
+		
+		src+=m_alternate_total;
+
+		memmove( dst, src, m_source.size() - m_header_size - 188 - m_misc_length - iframe - m_alternate_total );
+
+		p_length[0] = m_size_video_full;
+		return m_video_full;
 	}
 
 	void* generateBestVideo( size_t* p_length ) {
@@ -202,6 +295,10 @@ private:
 	size_t						m_size_video_no;
 	uint8_t*					m_video_single;
 	size_t						m_size_video_single;
+	uint8_t*					m_video_alternate;
+	size_t						m_size_video_alternate;
+	uint8_t*					m_video_full;
+	size_t						m_size_video_full;
 };
 
 #endif
