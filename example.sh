@@ -8,7 +8,7 @@ rm -f combined.ts
 for FILE in ../test_data/*.ts; do
 	rm -f output.ts*
 	./recode/recode -i $FILE -r 1000
-	./loader/referencedecoder_test output.ts
+	./recode/referencedecoder_test output.ts
 	cat $FILE >> original.ts
 	cat output.ts >> combined.ts
 	cat output.ts.novideo.ts >> novideo.ts

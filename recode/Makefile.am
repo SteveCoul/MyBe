@@ -25,3 +25,18 @@ recode_LDADD=-lavformat -lavcodec -lavutil -lswresample -lx264
 
 recode_LDFLAGS=-L$(FFMPEG_LIBRARY_DIR)
 
+lib_LTLIBRARIES=libMyBeLoader.la
+
+libMyBeLoader_la_CXXFLAGS=-I.
+libMyBeLoader_la_SOURCES=MyBeLoader.cpp
+
+bin_PROGRAMS+=loader_test
+
+loader_test_CXXFLAGS=
+loader_test_SOURCES=loader_test.cpp
+loader_test_LDADD=libMyBeLoader.la
+loader_test_LDFLAGS=-lcurl
+
+bin_PROGRAMS+=referencedecoder_test
+referencedecoder_test_SOURCES=referencedecoder_test.cpp
+

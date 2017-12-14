@@ -4,11 +4,9 @@ config.log
 *.ts
 
 recode/*.o
+recode/*.lo
 recode/recode
-
-loader/*.o
-loader/*.lo
-loader/libMyBeLoader.la
-loader/loader_test
-loader/referencedecoder_test
+recode/libMyBeLoader.la
+recode/loader_test
+recode/referencedecoder_test
 

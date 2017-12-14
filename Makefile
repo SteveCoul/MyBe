@@ -8,15 +8,13 @@ THIRD_PARTY=$(PWD)/3rdParty
 
 # ---------------
 
-all: recode/.configured loader/.configured 
+all: recode/.configured 
 	PATH=$(DEPS_PATH):$(PATH) $(MAKE) -C recode 
-	PATH=$(DEPS_PATH):$(PATH) $(MAKE) -C loader
 
 clean: clean_deps
 	rm -rf $(THIRD_PARTY)
 	rm -rf *.dSYM
 	$(MAKE) -C recode clean
-	$(MAKE) -C loader clean
 
 # ---------------
 
