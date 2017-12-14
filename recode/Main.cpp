@@ -11,6 +11,7 @@
 #include "Options.hpp"
 #include "PAT.hpp"
 #include "PMT.hpp"
+#include "RemuxH264StreamFrameBoundaryTask.hpp"
 #include "TS.hpp"
 #include "VideoDebugTask.hpp"
 #include "VideoDecoder.hpp"
@@ -247,6 +248,10 @@ int Main::run( int argc, char** argv ) {
 						XLOG_ERROR( "Failed to make alternate video track" );
 						ret = 11;
 					} else {
+
+						std::vector<TSPacket*>new_h264;
+						RemuxH264StreamFrameBoundaryTask::run( &new_h264, m_ts->stream( m_video_pid ) );
+						m_ts->replaceStream( m_video_pid, &new_h264 );
 
 						FindIDRTask findVideo;
 						Misc::pesScan( m_ts->stream( m_video_pid ), this, &findVideo );

@@ -87,6 +87,10 @@ int TS::replaceStream( unsigned pid, std::vector<TSPacket*>*source ) {
 		m_packets.erase( it );
 		m_packets_by_pid[pid].erase( m_packets_by_pid[pid].begin() );	
 	}
+	
+	for ( std::vector<TSPacket*>::const_iterator it = source->begin(); it != source->end(); ++it ) {
+		add( *it );
+	}
 	return 0;
 }
 
