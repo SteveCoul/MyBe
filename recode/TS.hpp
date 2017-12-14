@@ -27,6 +27,7 @@ public:
 	int writePIDStream( int fd, unsigned pid, int skip = -1, int count = -1 );
 	size_t sizePIDStream( unsigned pid );
 	void add( TSPacket* pkt );
+	int replaceStream( unsigned pid, std::vector<TSPacket*>*source );
 private:
 	std::vector<TSPacket*>	m_packets;
 	std::vector<TSPacket*>	m_packets_by_pid[ 8192 ];

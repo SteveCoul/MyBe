@@ -79,3 +79,14 @@ int TS::writePIDStream( int fd, unsigned pid, int skip, int count ) {
 	}
 	return rc;
 }
+
+int TS::replaceStream( unsigned pid, std::vector<TSPacket*>*source ) {
+	while ( m_packets_by_pid[ pid ].size() ) {
+		std::vector<TSPacket*>::iterator it;
+		it = std::find( m_packets.begin(), m_packets.end(), m_packets_by_pid[pid].at(0) );
+		m_packets.erase( it );
+		m_packets_by_pid[pid].erase( m_packets_by_pid[pid].begin() );	
+	}
+	return 0;
+}
+
