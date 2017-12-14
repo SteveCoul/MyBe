@@ -259,6 +259,7 @@ int Main::run( int argc, char** argv ) {
 							saveVideoStreamsAsRequired( );
 							decodeVideoStreamsAsRequired();
 							XLOG_INFO( "Initial Segment was %u, new segment %u", (unsigned)m_raw_size, (unsigned)ret );
+							ret = 0;
 						}
 					}
 				}
