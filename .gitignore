@@ -1,3 +1,4 @@
+.libs
 3rdParty
 OSX.deps
 config.log
@@ -9,4 +10,3 @@ recode/recode
 recode/libMyBeLoader.la
 recode/loader_test
 recode/referencedecoder_test
-
