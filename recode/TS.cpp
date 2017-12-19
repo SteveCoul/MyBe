@@ -1,4 +1,6 @@
 
+#include <algorithm>
+
 #include "TS.hpp"
 
 #include "xlog.hpp"
