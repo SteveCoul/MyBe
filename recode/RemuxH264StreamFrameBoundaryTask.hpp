@@ -7,29 +7,23 @@
 
 class RemuxH264StreamFrameBoundaryTask : public Misc::PESCallback {
 public:
-	static int run( std::vector<TSPacket*>* ret, TS::Stream* source );
+	static int run( std::vector<TSPacket*>* ret, TS::Stream* source, const char* dump_file = NULL );
 private:
 	virtual void pesCallback( void* opaque, PES* pes );
-	RemuxH264StreamFrameBoundaryTask( std::vector<TSPacket*>* ret, TS::Stream* source );
+	RemuxH264StreamFrameBoundaryTask( std::vector<TSPacket*>* ret, TS::Stream* source, const char* dump_file );
 	~RemuxH264StreamFrameBoundaryTask();
-	/**
-	 * Deliver all complete NALUs in buffer. Don't assume a NALU is complete if it runs off the end of the buffer.
-	 */
-	void deliverComplete();
-
-	/* 
-	 *Deliver the existing buffer as a NALA.
-	 */
+	bool deliverComplete();
 	void deliverAll();
 	bool checkHeader( const uint8_t* ptr, int len );
-	int findHeader( const uint8_t* ptr, int len );
-
-	void deliver( const uint8_t* ptr, size_t len, unsigned long long pts );	
+	void deliver( const uint8_t* ptr, size_t len );
 private:
 	std::vector<TSPacket*>*		m_output;
 	TS::Stream*					m_source;
 	std::vector<uint8_t>		m_buffer;
 	unsigned long long			m_pts;
+	unsigned long long			m_dts;
+	int							m_fd;
+	unsigned int				m_stream_id;
 };
 
 #endif
