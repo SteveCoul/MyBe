@@ -14,10 +14,12 @@ public:
 	public:
 		unsigned int numPackets();
 		TSPacket* packet( unsigned int offset );	/* returned packet is owned by TS */
+		int pid() { return m_pid; }
 	protected:
-		Stream( std::vector<TSPacket*>* p ) { m_packets = p; }
+		Stream( int pid, std::vector<TSPacket*>* p ) { m_pid = pid; m_packets = p; }
 	private:
 		std::vector<TSPacket*>*	m_packets;
+		int m_pid;
 	};
 public:
 	TS( const void* data, size_t length );

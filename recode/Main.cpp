@@ -249,12 +249,20 @@ int Main::run( int argc, char** argv ) {
 						ret = 11;
 					} else {
 
+						/* Recode video stream so each NALU is in it's own PES and entirely contained in TS packets,
+						   we do this primarily to ensure that the first IFrame is encoded in a unique set of TS frames
+						   so it can be reused */
 						std::vector<TSPacket*>new_h264;
-						RemuxH264StreamFrameBoundaryTask::run( &new_h264, m_ts->stream( m_video_pid ), "dump_remux" );
+						RemuxH264StreamFrameBoundaryTask::run( &new_h264, m_ts->stream( m_video_pid ), "remux-orig.ts" );
 						m_ts->replaceStream( m_video_pid, &new_h264 );
 
 						FindIDRTask findVideo;
 						Misc::pesScan( m_ts->stream( m_video_pid ), this, &findVideo );
+
+						/* Recode the alt stream so we can discard the initial iframe and reuse the one from above */
+						std::vector<TSPacket*>new_alt_h264;
+						RemuxH264StreamFrameBoundaryTask::run( &new_alt_h264, m_ts->stream( m_alternate_pid ), "remux-alt.ts" );
+						m_ts->replaceStream( m_alternate_pid, &new_alt_h264 );
 
 						FindIDRTask findAlternate;
 						Misc::pesScan( m_ts->stream( m_alternate_pid ), this, &findAlternate );

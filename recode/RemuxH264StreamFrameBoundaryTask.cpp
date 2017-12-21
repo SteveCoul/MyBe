@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "Misc.hpp"
 #include "xlog.hpp"
 
 #include "RemuxH264StreamFrameBoundaryTask.hpp"
@@ -16,10 +17,7 @@ RemuxH264StreamFrameBoundaryTask::RemuxH264StreamFrameBoundaryTask( std::vector<
 	{
 
 	if ( dump_file ) {
-		char t[ 1024 ];
-
-		(void)snprintf( t, sizeof(t), "%s.es.h264", dump_file );
-		m_fd = open( t, O_CREAT | O_WRONLY | O_TRUNC, 0666 );
+		m_fd = open( dump_file, O_CREAT | O_WRONLY | O_TRUNC, 0666 );
 	}
 }
 
@@ -27,11 +25,81 @@ RemuxH264StreamFrameBoundaryTask::~RemuxH264StreamFrameBoundaryTask() {
 	if ( m_fd >= 0 ) (void)close( m_fd );
 }
 
+static
+const uint8_t* makeTSPacket( uint8_t* output, unsigned pid, unsigned* p_cc, const uint8_t* source, size_t* plen ) {
+	size_t len = plen[0];
+
+	output[0] = 0x47;
+	output[1] = ( pid >> 8 ) & 0x1F;
+	output[2] = pid & 255;
+
+	if ( len >= 184 ) {
+		output[3] = 0x10;
+	} else {
+		output[3] = 0x30;
+	}
+	output[3] |= ( (p_cc[0] & 0x0F) );
+	p_cc[0] = ( ( p_cc[0] + 1 ) & 0x0F );
+
+	if ( len >= 184 ) {
+		memmove( output+4, source, 184 );
+		source+=184;
+		len-=184;
+	} else if ( len == 183 ) {
+		output[4] = 0;
+		memmove( output+5, source, len );
+	} else {
+		int skip = 184 - len;
+		skip--;
+		output[4] = skip;
+		output[5] = 0;
+		skip--;
+		if ( skip > 0 ) memset( output+6, 0xFF, skip );
+		memmove( output+6+skip, source, len );
+	}
+
+	plen[0] = len;
+	return source;
+}
+
 void RemuxH264StreamFrameBoundaryTask::deliver( const uint8_t* ptr, size_t len ) {
 //	XLOG_INFO("PTS %llu DTS %llu", m_pts, m_dts );
 //	XLOG_HEXDUMP_INFO( ptr, len );
+
+	std::vector<uint8_t>* pes = Misc::makeUnboundPESSegment( ptr, len, m_pts, m_dts, m_stream_id );
+	if ( pes == NULL ) {
+		XLOG_ERROR("Failed to make PES stream");
+		return;
+	}
+
+	unsigned PID=m_source->pid();
+	unsigned CC=0;
+	uint8_t packet[188];
+
+	ptr = pes->data();
+	len = pes->size();
+	
+	ptr = makeTSPacket( packet, PID, &CC, ptr, &len );
+	packet[1] |= 0x40;
 	if ( m_fd >= 0 )
-		(void)write( m_fd, ptr, len );
+		(void)write( m_fd, packet, 188 );
+	m_output->push_back( new TSPacket( packet, true ) );
+
+	while ( len >= 184 ) {
+		ptr = makeTSPacket( packet, PID, &CC, ptr, &len );
+		if ( m_fd >= 0 )
+			(void)write( m_fd, packet, 188 );
+		m_output->push_back( new TSPacket( packet, true ) );
+
+	}
+	if ( len != 0 ) {
+		ptr = makeTSPacket( packet, PID, &CC, ptr, &len );
+		if ( m_fd >= 0 )
+			(void)write( m_fd, packet, 188 );
+		m_output->push_back( new TSPacket( packet, true ) );
+	}
+
+	delete pes;
 }
 
 bool RemuxH264StreamFrameBoundaryTask::deliverComplete() {
@@ -127,6 +195,5 @@ int RemuxH264StreamFrameBoundaryTask::run( std::vector<TSPacket*>* ret, TS::Stre
 
 
 	for ( unsigned i = 0; i < source->numPackets(); i++ )
-		ret->push_back( source->packet(i) );
 #endif
 

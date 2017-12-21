@@ -28,7 +28,7 @@ TS::TS( const void* data, size_t length ) {
 	if ( length != 0 ) 
 		XLOG_WARNING( "Excess of data at end of stream" );
 
-	for ( int i = 0; i < 8192; i++ ) m_stream[i] = new Stream( &m_packets_by_pid[ i ] );
+	for ( int i = 0; i < 8192; i++ ) m_stream[i] = new Stream( i, &m_packets_by_pid[ i ] );
 }
 
 TS::~TS() {
