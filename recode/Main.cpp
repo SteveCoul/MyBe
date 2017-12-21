@@ -250,7 +250,7 @@ int Main::run( int argc, char** argv ) {
 					} else {
 
 						std::vector<TSPacket*>new_h264;
-						RemuxH264StreamFrameBoundaryTask::run( &new_h264, m_ts->stream( m_video_pid ) );
+						RemuxH264StreamFrameBoundaryTask::run( &new_h264, m_ts->stream( m_video_pid ), "dump_remux" );
 						m_ts->replaceStream( m_video_pid, &new_h264 );
 
 						FindIDRTask findVideo;

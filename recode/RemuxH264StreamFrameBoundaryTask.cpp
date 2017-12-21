@@ -15,58 +15,23 @@ RemuxH264StreamFrameBoundaryTask::RemuxH264StreamFrameBoundaryTask( std::vector<
 	, m_stream_id(0)
 	{
 
-	if ( dump_file )
-		m_fd = open( dump_file, O_CREAT | O_WRONLY | O_TRUNC, 0666 );
+	if ( dump_file ) {
+		char t[ 1024 ];
+
+		(void)snprintf( t, sizeof(t), "%s.es.h264", dump_file );
+		m_fd = open( t, O_CREAT | O_WRONLY | O_TRUNC, 0666 );
+	}
 }
 
 RemuxH264StreamFrameBoundaryTask::~RemuxH264StreamFrameBoundaryTask() {
-	if ( m_fd >= 0 )
-		(void)close( m_fd );
+	if ( m_fd >= 0 ) (void)close( m_fd );
 }
 
 void RemuxH264StreamFrameBoundaryTask::deliver( const uint8_t* ptr, size_t len ) {
 //	XLOG_INFO("PTS %llu DTS %llu", m_pts, m_dts );
 //	XLOG_HEXDUMP_INFO( ptr, len );
-//	if ( m_fd >= 0 )
-//			(void)write( m_fd, ptr, len );
-
-
-	if (1) {
-		uint8_t output[ len + 21 ];
-		output[0] = 0x00;
-		output[1] = 0x00;
-		output[2] = 0x01;
-		output[3] = m_stream_id;
-		if ( len > 65535 ) {
-			output[4] = 0;
-			output[5] = 0;
-		} else {
-			output[4] = ( ( len >> 8 ) & 255 );
-			output[5] = len & 255;
-		}
-		output[6] = 0xC0 | 0x04;
-		output[7] = 0x80 | 0x40 | 0x02;
-		output[8] = 10;
-		// PTS
-		output[9] = 0xFF;
-		output[10] = 0xFF;
-		output[11] = 0xFF;
-		output[12] = 0xFF;
-		output[13] = 0xFF;
-		// DTS
-		output[14] = 0xFF;
-		output[15] = 0xFF;
-		output[16] = 0xFF;
-		output[17] = 0xFF;
-		output[18] = 0xFF;
-		
-		memmove( output+19, ptr, len );
-
-		output[ len+19 ] = 0xFF;
-		output[ len+20 ] = 0xFF;
-		if ( m_fd >= 0 )
-			(void)write( m_fd, output, len+21 );
-	}
+	if ( m_fd >= 0 )
+		(void)write( m_fd, ptr, len );
 }
 
 bool RemuxH264StreamFrameBoundaryTask::deliverComplete() {
@@ -93,6 +58,7 @@ void RemuxH264StreamFrameBoundaryTask::deliverAll() {
 	size_t len = m_buffer.size();
 	if ( ptr )
 		deliver( ptr, len );
+	m_buffer.erase( m_buffer.begin(), m_buffer.end() );
 }
 
 bool RemuxH264StreamFrameBoundaryTask::checkHeader( const uint8_t* ptr, int len ) {
@@ -127,7 +93,10 @@ void RemuxH264StreamFrameBoundaryTask::pesCallback( void* opaque, PES* pes ) {
 		dts = 0xFFFFFFFFFFFFFFFFUL;
 
 	ptr = pes->payload( &len );
-	if ( ptr == NULL ) return;
+	if ( ptr == NULL ) {
+		XLOG_WARNING("Unexpected empty payload");
+		return;
+	}
 
 	if ( checkHeader( ptr, len ) ) {
 		deliverAll();
