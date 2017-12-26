@@ -279,8 +279,22 @@ private:
 			m_alternate_total = l_alternate_total;
 			m_alternate_iframe_keep = l_alternate_iframe_keep;
 
-			fprintf( stderr, "Headers %u, Misc Length %u, First IFrame Keep %u, Alternate Total %u, Alternate IFrame Keep %u\n", 
-						m_header_size, m_misc_length, m_first_iframe_keep, m_alternate_total, m_alternate_iframe_keep );
+			fprintf( stderr, "Headers %u [%u.%u], Misc Length %u [%u.%u], First IFrame Keep %u [%u.%u], Alternate Total %u [%u.%u], Alternate IFrame Keep %u [%u.%u]\n", 
+						m_header_size,
+						m_header_size/188,
+						m_header_size%188,
+						m_misc_length,
+						m_misc_length/188,
+						m_misc_length%188,
+						m_first_iframe_keep,
+						m_first_iframe_keep/188,
+						m_first_iframe_keep%188,
+						m_alternate_total,
+						m_alternate_total/188,
+						m_alternate_total%188,
+						m_alternate_iframe_keep,
+						m_alternate_iframe_keep/188,
+						m_alternate_iframe_keep%188 );
 
 			m_decoded_header = true;
 			return true;
