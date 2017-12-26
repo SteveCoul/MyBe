@@ -146,6 +146,15 @@ int Main::writeOutputFile( unsigned int iframe_original_len, unsigned int iframe
 		magic
 		video */
 
+	// FIXME : we now that the incoing 'len' values are offsets to the first NALU after the IDR, and we know that each NALU is in a TS frame,
+	//		   therefore we know that the number of TS frames we need for the IDR are (len/188)-1 m'kay - bit messy.
+
+	// FIXME rework the metadata so we can specifiy, #frames instead of keep lengths etc
+
+	// FOR NOW
+	iframe_original_len = ( ( iframe_original_len / 188 ) - 1 ) * 188;
+	iframe_alternate_len = ( ( iframe_alternate_len / 188 ) - 1 ) * 188;
+
 	// FIXME. Eventually, I'll want to remove the first iframe from the alternate video chunk,
 	//		  but for now I'll just remember the byte offset into that pid stream and store it
 	//		  in the header.
