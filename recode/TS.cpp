@@ -12,12 +12,13 @@ void TS::add( TSPacket* pkt ) {
 
 TS::TS( const void* data, size_t length ) {
 	while ( length >= 188 ) {
-		TSPacket* pkt = new TSPacket( data, 188 );
+		TSPacket* pkt = new TSPacket( data, false );
 		if ( pkt->isvalid()	== false ) {
 			XLOG_WARNING( "Invalid TSPacket/Frame, stop processing" );
 			break;
 		}
 
+		XLOG_INFO("Original Packet %p", pkt );
 		m_packets.push_back( pkt );
 		m_packets_by_pid[ pkt->pid() ].push_back( pkt );
 
@@ -86,11 +87,12 @@ int TS::replaceStream( unsigned pid, std::vector<TSPacket*>*source ) {
 	while ( m_packets_by_pid[ pid ].size() ) {
 		std::vector<TSPacket*>::iterator it;
 		it = std::find( m_packets.begin(), m_packets.end(), m_packets_by_pid[pid].at(0) );
+		delete *it;
 		m_packets.erase( it );
 		m_packets_by_pid[pid].erase( m_packets_by_pid[pid].begin() );	
 	}
 	
-	for ( std::vector<TSPacket*>::const_iterator it = source->begin(); it != source->end(); ++it ) {
+	for ( std::vector<TSPacket*>::const_iterator it = source->begin(); it != source->end(); it++ ) {
 		add( *it );
 	}
 	return 0;
