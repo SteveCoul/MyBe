@@ -252,12 +252,10 @@ int Main::run( int argc, char** argv ) {
 
 					/* FIXME really it needs to be an unused pid that is NOT in the PMT just to guard
 					   against PMT referencing PIDS not in the transport */
-#if 0
 					if ( AlternateVideoTask::make( m_ts, m_video_pid, m_alternate_pid, m_opts.frames(), m_opts.rate() ) != 0 ) {
 						XLOG_ERROR( "Failed to make alternate video track" );
 						ret = 11;
 					} else {
-#endif
 						/* Recode video stream so each NALU is in it's own PES and entirely contained in TS packets,
 						   we do this primarily to ensure that the first IFrame is encoded in a unique set of TS frames
 						   so it can be reused */
@@ -283,7 +281,7 @@ int Main::run( int argc, char** argv ) {
 							XLOG_INFO( "Initial Segment was %u, new segment %u", (unsigned)m_raw_size, (unsigned)ret );
 							ret = 0;
 						}
-//					}
+					}
 				}
 			}
 		}

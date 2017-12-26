@@ -18,7 +18,6 @@ TS::TS( const void* data, size_t length ) {
 			break;
 		}
 
-		XLOG_INFO("Original Packet %p", pkt );
 		m_packets.push_back( pkt );
 		m_packets_by_pid[ pkt->pid() ].push_back( pkt );
 
