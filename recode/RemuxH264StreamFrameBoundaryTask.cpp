@@ -48,6 +48,7 @@ const uint8_t* makeTSPacket( uint8_t* output, unsigned pid, unsigned* p_cc, cons
 	} else if ( len == 183 ) {
 		output[4] = 0;
 		memmove( output+5, source, len );
+		len = 0;
 	} else {
 		int skip = 184 - len;
 		skip--;
@@ -56,15 +57,21 @@ const uint8_t* makeTSPacket( uint8_t* output, unsigned pid, unsigned* p_cc, cons
 		skip--;
 		if ( skip > 0 ) memset( output+6, 0xFF, skip );
 		memmove( output+6+skip, source, len );
+		len = 0;
 	}
 
 	plen[0] = len;
+
+//	XLOG_HEXDUMP_INFO( output, 188 );
 	return source;
 }
 
 void RemuxH264StreamFrameBoundaryTask::deliver( const uint8_t* ptr, size_t len ) {
 //	XLOG_INFO("PTS %llu DTS %llu", m_pts, m_dts );
 //	XLOG_HEXDUMP_INFO( ptr, len );
+
+	// FIXME 
+	m_dts = 0xFFFFFFFFFFFFFFFF;
 
 	std::vector<uint8_t>* pes = Misc::makeUnboundPESSegment( ptr, len, m_pts, m_dts, m_stream_id );
 	if ( pes == NULL ) {
@@ -140,6 +147,8 @@ void RemuxH264StreamFrameBoundaryTask::pesCallback( void* opaque, PES* pes ) {
 	size_t				len;
 	unsigned long long	pts;
 	unsigned long long	dts;
+
+//	XLOG_INFO("--------------------------");
 
 	while ( deliverComplete() ) ;
 	
