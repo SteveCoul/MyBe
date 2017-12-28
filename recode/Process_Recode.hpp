@@ -1,5 +1,5 @@
-#ifndef __Main_hpp__
-#define __Main_hpp__
+#ifndef __Process_Recode_hpp__
+#define __Process_Recode_hpp__
 
 #include <stddef.h>
 #include <string.h>
@@ -9,7 +9,7 @@
 #include "TS.hpp"
 
 /// Main application class for the recoder.
-class Main : public Misc::PESCallback {
+class Process_Recode : public Misc::PESCallback {
 public:
 	/// \brief		Create instance of application and run it.
 	/// \param[in]	argc		Incoming argument count.
@@ -17,8 +17,8 @@ public:
 	/// \return 0 on success.
 	static int main( int argc, char** argv );
 private:
-	Main();
-	~Main();
+	Process_Recode();
+	~Process_Recode();
 
 	/// \brief		Utility function to open and mmap a file
 	/// \param[in]	path		Source filename

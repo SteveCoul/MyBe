@@ -18,25 +18,25 @@
 #include "VideoEncoder.hpp"
 #include "xlog.hpp"
 
-#include "Main.hpp"
+#include "Process_Recode.hpp"
 
-int Main::main( int argc, char** argv ) {
-	Main app;
+int Process_Recode::main( int argc, char** argv ) {
+	Process_Recode app;
 	return app.run( argc, argv );
 }
 
-Main::Main() 
+Process_Recode::Process_Recode() 
 	: m_ts( NULL )
 	, m_raw_ptr( NULL )
 	, m_pmt_stream( NULL )
 	{ }
 
-Main::~Main() {
+Process_Recode::~Process_Recode() {
 	if ( m_ts ) delete m_ts;
 	if ( m_raw_ptr ) munmap( m_raw_ptr, m_raw_size );
 }
 
-void* Main::openAndMap( std::string path, size_t* p_length ) {
+void* Process_Recode::openAndMap( std::string path, size_t* p_length ) {
 	void* rc;
 	int fd = open( path.c_str(), O_RDONLY );
 	if ( fd < 0 ) {
@@ -59,28 +59,28 @@ void* Main::openAndMap( std::string path, size_t* p_length ) {
 	return rc;
 }
 
-void Main::pidToFile( std::string path, unsigned int pid ) {
+void Process_Recode::pidToFile( std::string path, unsigned int pid ) {
 	int ofd;
 	ofd = open( path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666 );
 	m_ts->writePIDStream( ofd, pid );
 	(void)close( ofd );
 }
 
-void Main::decodeVideoStreamsAsRequired() {
+void Process_Recode::decodeVideoStreamsAsRequired() {
 	if ( m_opts.decodeVideos() ) {
 		(void)VideoDebugTask::decode( m_ts, m_video_pid, "original_video" );
 		(void)VideoDebugTask::decode( m_ts, m_alternate_pid, "new_video" );
 	}
 }
 
-void Main::saveVideoStreamsAsRequired() {
+void Process_Recode::saveVideoStreamsAsRequired() {
 	if ( m_opts.saveVideos() ) {
 		pidToFile( "tmp_original.ts", m_video_pid );
 		pidToFile( "tmp_new.ts", m_alternate_pid );
 	}
 }
 
-bool Main::findAndDecodePAT() {
+bool Process_Recode::findAndDecodePAT() {
 	bool rc = false;
 	TS::Stream* pat_stream = m_ts->stream( 0 );
 	if ( ( pat_stream == NULL ) || ( pat_stream->numPackets() == 0 ) ) {
@@ -112,7 +112,7 @@ bool Main::findAndDecodePAT() {
 	return rc;
 }
 
-bool Main::findAndDecodePMT() {
+bool Process_Recode::findAndDecodePMT() {
 	bool rc = false;
 	TSPacket* pmt_packet = m_pmt_stream->packet(0);
 	if ( pmt_packet->pusi() == 0 ) {
@@ -134,7 +134,7 @@ bool Main::findAndDecodePMT() {
 	return rc;
 }
 
-int Main::writeOutputFile( unsigned int iframe_original_len, unsigned int iframe_alternate_len ) {
+int Process_Recode::writeOutputFile( unsigned int iframe_original_len, unsigned int iframe_alternate_len ) {
 	int rc;
 	/* Now we write our new output stream,
 		PAT
@@ -229,7 +229,7 @@ int Main::writeOutputFile( unsigned int iframe_original_len, unsigned int iframe
 	return rc;
 }
 
-int Main::run( int argc, char** argv ) {
+int Process_Recode::run( int argc, char** argv ) {
 	xlog::init( argv[0] );
 
 	int ret = 0;
@@ -287,12 +287,12 @@ int Main::run( int argc, char** argv ) {
 	return ret;
 }
 
-void Main::pesCallback( void* opaque, PES* pes ) {
+void Process_Recode::pesCallback( void* opaque, PES* pes ) {
 	FindIDRTask* f = (FindIDRTask*)opaque;
 	f->pes( pes );
 }
 
 int main( int argc, char** argv ) {
-	return Main::main( argc, argv );
+	return Process_Recode::main( argc, argv );
 }
 
