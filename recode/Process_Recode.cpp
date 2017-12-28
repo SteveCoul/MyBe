@@ -229,6 +229,42 @@ int Process_Recode::writeOutputFile( unsigned int iframe_original_len, unsigned 
 	return rc;
 }
 
+int Process_Recode::guessInputQuality() {
+	XLOG_INFO("Original video stream is %u bytes", m_ts->sizePIDStream( m_video_pid ) );
+
+	int tpid = m_ts->getUnusedPID( 256 );
+
+	if ( m_ts->sizePIDStream(tpid) != 0 ) {
+		XLOG_ERROR("Cannot run the temporary pid we were going to use is already in use." );
+		return -1;
+	}
+
+	int lower = 0;
+	int upper = 51;
+	int mid;
+
+	while ( lower < upper ) {
+		mid = lower + ( ( upper - lower ) / 2 );
+
+		if ( AlternateVideoTask::make( m_ts, m_video_pid, tpid, 1, mid ) != 0 ) {
+			XLOG_ERROR("Aborting - failed to make the alternate video" );
+			return -1;
+		}
+
+		XLOG_INFO( "%d.%d] Quality %d gave a file %d%% of original", lower, upper, mid, m_ts->sizePIDStream( tpid ) * 100 / m_ts->sizePIDStream(m_video_pid) );
+
+		if ( abs( lower-upper) <= 1 ) break;
+
+		if ( m_ts->sizePIDStream(tpid) > m_ts->sizePIDStream(m_video_pid) ) lower = mid;
+		else upper = mid;
+		
+		m_ts->removeStream( tpid );
+	}
+	m_ts->removeStream( tpid );
+
+	return mid;
+}
+
 int Process_Recode::run( int argc, char** argv ) {
 	xlog::init( argv[0] );
 
@@ -248,6 +284,12 @@ int Process_Recode::run( int argc, char** argv ) {
 				if ( findAndDecodePMT() ) {
 					m_alternate_pid = m_ts->getUnusedPID( 256 );
 					XLOG_INFO( "Well put the magic alternate stream on PID %d", m_alternate_pid );
+
+					int quality = m_opts.quality();
+					if ( quality == -1 )
+						quality = guessInputQuality();
+					if ( quality == -1 )
+						quality = 22;
 
 					/// \todo	FIXME really it needs to be an unused pid that is NOT in the PMT just to guard against PMT referencing PIDS not in the transport 
 					if ( AlternateVideoTask::make( m_ts, m_video_pid, m_alternate_pid, m_opts.frames(), m_opts.quality() ) != 0 ) {

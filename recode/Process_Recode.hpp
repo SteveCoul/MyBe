@@ -58,6 +58,10 @@ private:
 	/// \return 0 on success.
 	int run( int argc, char** argv );
 
+	/// \brief		Guess at a H264 QP quality value that will let us encode video at about the same bitrate/quality as the original.
+	/// \return Q value or -1
+	int guessInputQuality();
+
 	void pesCallback( void* opaque, PES* pes );
 private:
 	Options			m_opts;				///< Runtime options and configuration.
