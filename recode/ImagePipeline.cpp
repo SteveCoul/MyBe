@@ -3,19 +3,6 @@
 
 #include "ImagePipeline.hpp"
 
-unsigned char*	m_y;
-unsigned char*	m_u;
-unsigned char*	m_v;
-
-unsigned char*	m_save_y;
-unsigned char*	m_save_u;
-unsigned char*	m_save_v;
-
-unsigned int    m_width;
-unsigned int    m_height;
-unsigned int    m_counter;
-unsigned int	m_depth;
-
 #define MIN(a,b) (a)<(b)?(a):(b)
 
 ImagePipeline::ImagePipeline()

@@ -17,8 +17,6 @@ extern "C" {
 ///				The pipeline will duplicate images in batches such that the encoder will write very small non IDR frames (as nothing changed)
 ///				which gives the effect of a lower frame rate alternate video without actually changing the framerate and potentially 
 ///				confusing players/decoders further down the line. The result will be a smaller video representation.
-///
-/// \bug	Global variables need to be class members in implementation.
 class ImagePipeline {
 public:
 	ImagePipeline();
@@ -41,6 +39,18 @@ public:
 	/// \param[in]	frame		The AVFrame to return to previous state.
 	void restore( AVFrame* frame );
 private:
+	unsigned char*	m_y;			///< Data store for image we are saving and replicating.
+	unsigned char*	m_u;			///< Data store for image we are saving and replicating.
+	unsigned char*	m_v;			///< Data store for image we are saving and replicating.
+
+	unsigned char*	m_save_y;		///< Data store for current image so it can be restored.
+	unsigned char*	m_save_u;		///< Data store for current image so it can be restored.
+	unsigned char*	m_save_v;		///< Data store for current image so it can be restored.
+
+	unsigned int    m_width;		///< Image size
+	unsigned int    m_height;		///< Image size
+	unsigned int    m_counter;		///< Current image counter 0...depth
+	unsigned int	m_depth;		///< Pipeline depth ( how many times an image is replicated before a new one is stored )
 };
 
 #endif
