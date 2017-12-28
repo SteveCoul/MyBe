@@ -86,8 +86,7 @@ bool Main::findAndDecodePAT() {
 	if ( ( pat_stream == NULL ) || ( pat_stream->numPackets() == 0 ) ) {
 		XLOG_ERROR( "No PAT found" );
 	} else {
-		/* FIXME - we need an API for TS::Stream to get the next complete section,
-		   for now, I'm only worrying about PATs that fit in a single frame */
+		/// \todo we need an API for TS::Stream to get the next complete section, for now, I'm only worrying about PATs that fit in a single frame 
 		TSPacket* pat_packet = pat_stream->packet(0);
 		if ( pat_packet->pusi() == 0 ) {
 			XLOG_ERROR( "First PAT TS Frame does not have PUSI set" );
@@ -146,16 +145,16 @@ int Main::writeOutputFile( unsigned int iframe_original_len, unsigned int iframe
 		magic
 		video */
 
-	// FIXME : we now that the incoing 'len' values are offsets to the first NALU after the IDR, and we know that each NALU is in a TS frame,
-	//		   therefore we know that the number of TS frames we need for the IDR are (len/188)-1 m'kay - bit messy.
+	/// \todo	we now that the incoing 'len' values are offsets to the first NALU after the IDR, and we know that each NALU is in a TS frame,
+	///			therefore we know that the number of TS frames we need for the IDR are (len/188)-1 m'kay - bit messy.
 
-	// FIXME rework the metadata so we can specifiy, #frames instead of keep lengths etc
+	/// \todo	rework the metadata so we can specifiy, number of frames instead of keep lengths etc
 
 	// FOR NOW
 	iframe_original_len = ( ( iframe_original_len / 188 ) - 1 ) * 188;
 	iframe_alternate_len = ( ( iframe_alternate_len / 188 ) - 1 ) * 188;
 
-	// FIXME. Eventually, I'll want to remove the first iframe from the alternate video chunk,
+	/// \todo FIXME. Eventually, I'll want to remove the first iframe from the alternate video chunk,
 	//		  but for now I'll just remember the byte offset into that pid stream and store it
 	//		  in the header.
 
@@ -250,8 +249,7 @@ int Main::run( int argc, char** argv ) {
 					m_alternate_pid = m_ts->getUnusedPID( 256 );
 					XLOG_INFO( "Well put the magic alternate stream on PID %d", m_alternate_pid );
 
-					/* FIXME really it needs to be an unused pid that is NOT in the PMT just to guard
-					   against PMT referencing PIDS not in the transport */
+					/// \todo	FIXME really it needs to be an unused pid that is NOT in the PMT just to guard against PMT referencing PIDS not in the transport 
 					if ( AlternateVideoTask::make( m_ts, m_video_pid, m_alternate_pid, m_opts.frames(), m_opts.rate() ) != 0 ) {
 						XLOG_ERROR( "Failed to make alternate video track" );
 						ret = 11;
