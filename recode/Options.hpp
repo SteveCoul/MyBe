@@ -46,9 +46,9 @@ public:
 	/// \return value.
 	int frames() { return m_frames; }
 
-	/// \brief Return alternate video encode rate.
+	/// \brief Return alternate video encode quality.
 	/// \return value.
-	int rate() { return m_rate; }
+	int quality() { return m_quality; }
 
 private:
 	int parse( int argc, char** argv );
@@ -61,7 +61,7 @@ private:
 	bool			m_save_videos;
 	bool			m_decode_videos;
 	int				m_frames;
-	int				m_rate;
+	int				m_quality;
 };
 
 #endif

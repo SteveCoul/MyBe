@@ -52,8 +52,8 @@ int Options::parse( int argc, char** argv ) {
 				m_frames = atoi( argv[1] );
 				skip = true;
 				break;
-			case 'r':
-				m_rate = atoi( argv[1] );
+			case 'q':
+				m_quality = atoi( argv[1] );
 				skip = true;
 				break;
 			default:
@@ -78,7 +78,7 @@ int Options::parse( int argc, char** argv ) {
 		fprintf( stderr, "    -s              Save intermediate video streams\n" );
 		fprintf( stderr, "    -d              Decode intermediate video streams\n" );
 		fprintf( stderr, "    -f <value>      Alternate stream frames parameter [default: %d]\n", m_frames );
-		fprintf( stderr, "    -r <value>      Alternate stream rate parameter [default: %d]\n", m_rate );
+		fprintf( stderr, "    -q <value>      Alternate stream quality parameter [default: %d]\n", m_quality );
 		fprintf( stderr, "\n" );
 		if ( error_text[0] != '\0' ) fprintf( stderr, "Error: %s\n", error_text );
 	}
@@ -94,6 +94,6 @@ void Options::setDefault() {
 	m_save_videos = false;
 	m_decode_videos = false;
 	m_frames = -1;
-	m_rate = -1;
+	m_quality = -1;
 }
 

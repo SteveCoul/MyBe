@@ -250,7 +250,7 @@ int Process_Recode::run( int argc, char** argv ) {
 					XLOG_INFO( "Well put the magic alternate stream on PID %d", m_alternate_pid );
 
 					/// \todo	FIXME really it needs to be an unused pid that is NOT in the PMT just to guard against PMT referencing PIDS not in the transport 
-					if ( AlternateVideoTask::make( m_ts, m_video_pid, m_alternate_pid, m_opts.frames(), m_opts.rate() ) != 0 ) {
+					if ( AlternateVideoTask::make( m_ts, m_video_pid, m_alternate_pid, m_opts.frames(), m_opts.quality() ) != 0 ) {
 						XLOG_ERROR( "Failed to make alternate video track" );
 						ret = 11;
 					} else {
@@ -258,7 +258,7 @@ int Process_Recode::run( int argc, char** argv ) {
 						   we do this primarily to ensure that the first IFrame is encoded in a unique set of TS frames
 						   so it can be reused */
 						std::vector<TSPacket*>new_h264;
-						RemuxH264StreamFrameBoundaryTask::run( &new_h264, m_ts->stream( m_video_pid ), NULL );
+						RemuxH264StreamFrameBoundaryTask::run( "original video", &new_h264, m_ts->stream( m_video_pid ), NULL );
 						m_ts->replaceStream( m_video_pid, &new_h264 );
 
 						FindIDRTask findVideo;
@@ -266,7 +266,7 @@ int Process_Recode::run( int argc, char** argv ) {
 
 						/* Recode the alt stream so we can discard the initial iframe and reuse the one from above */
 						std::vector<TSPacket*>new_alt_h264;
-						RemuxH264StreamFrameBoundaryTask::run( &new_alt_h264, m_ts->stream( m_alternate_pid ), NULL );
+						RemuxH264StreamFrameBoundaryTask::run( "alternate video", &new_alt_h264, m_ts->stream( m_alternate_pid ), NULL );
 						m_ts->replaceStream( m_alternate_pid, &new_alt_h264 );
 
 						FindIDRTask findAlternate;

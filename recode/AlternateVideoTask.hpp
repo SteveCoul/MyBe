@@ -20,9 +20,9 @@ public:
 	/// \param[in]	video_pid		The PID of the original video.
 	/// \param[in]	alternate_pid	The PID to use for the new video stream.
 	/// \param[in]	opt_frames		How many frames are duplicated in the image pipeline to reduce encoded video size.
-	/// \param[in]	opt_rate		Output encoder rate.
+	/// \param[in]	opt_quality		Output encoder quality.
 	/// \return 0 on success, -ve on error.
-	int run( TS* ts, unsigned int video_pid, unsigned int alternate_pid, int opt_frames, int opt_rate );
+	int run( TS* ts, unsigned int video_pid, unsigned int alternate_pid, int opt_frames, int opt_quality );
 public:
 	/// \brief		Create and run the decoder task to generate an alternate video stream.
 	/// \param[in]	ts				The transport stream that sources the video and will recieve the newly created video.

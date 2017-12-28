@@ -1,6 +1,7 @@
 #ifndef __RemuxH264StreamFrameBoundaryTask_hpp__
 #define __RemuxH264StreamFrameBoundaryTask_hpp__
 
+#include <string>
 #include <vector>
 #include "Misc.hpp"
 #include "TS.hpp"
@@ -9,20 +10,22 @@
 class RemuxH264StreamFrameBoundaryTask : public Misc::PESCallback {
 public:
 	/// Create task instance and run it.
+	/// \param[in]	title		Title for this task, used in debug messages.
 	/// \param[in]	ret			Where to store transport segment packets of new video.
 	/// \param[in]	source		Source video.
 	/// \param[in]	dump_file	Files to dump to for debug.
 	/// \return 0 on success, -ve on error.
-	static int run( std::vector<TSPacket*>* ret, TS::Stream* source, const char* dump_file = NULL );
+	static int run( std::string title, std::vector<TSPacket*>* ret, TS::Stream* source, const char* dump_file = NULL );
 private:
 
 	virtual void pesCallback( void* opaque, PES* pes );
 
 	/// Create task instance.
+	/// \param[in]	title		Title for this task, used in debug messages.
 	/// \param[in]	ret			Where to store transport segment packets of new video.
 	/// \param[in]	source		Source video.
 	/// \param[in]	dump_file	Files to dump to for debug.
-	RemuxH264StreamFrameBoundaryTask( std::vector<TSPacket*>* ret, TS::Stream* source, const char* dump_file );
+	RemuxH264StreamFrameBoundaryTask( std::string title, std::vector<TSPacket*>* ret, TS::Stream* source, const char* dump_file );
 
 	~RemuxH264StreamFrameBoundaryTask();
 
@@ -45,6 +48,7 @@ private:
 	/// \param[in]	len		Length of data to deliver.
 	void deliver( const uint8_t* ptr, size_t len );
 private:
+	std::string					m_title;		///< Task title
 	std::vector<TSPacket*>*		m_output;		///< Where to store output TS Packets.
 	TS::Stream*					m_source;		///< Original video source.
 	std::vector<uint8_t>		m_buffer;		///< Storage whilst building NALUs from incoming PES.
@@ -52,6 +56,7 @@ private:
 	unsigned long long			m_dts;			///< Current DTS.
 	int							m_fd;			///< File descriptor of where to save debug data if non -1.
 	unsigned int				m_stream_id;	///< Stream Id of video stream.
+	unsigned int				m_counter;		///< Nalu written counter
 };
 
 #endif

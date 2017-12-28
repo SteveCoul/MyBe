@@ -27,7 +27,7 @@ void AlternateVideoTask::videoComplete() {
 	m_encoder->endOfVideo();
 }
 
-int AlternateVideoTask::run( TS* ts, unsigned int video_pid, unsigned int alternate_pid, int opt_frames, int opt_rate ) {
+int AlternateVideoTask::run( TS* ts, unsigned int video_pid, unsigned int alternate_pid, int opt_frames, int opt_quality ) {
 	m_decoder = new VideoDecoder( ts, video_pid, this );
 	if ( m_decoder == NULL ) {
 		XLOG_ERROR("Failed to create video decoder" );
@@ -37,7 +37,8 @@ int AlternateVideoTask::run( TS* ts, unsigned int video_pid, unsigned int altern
 		XLOG_ERROR("Failed to init video decoder" );
 		return -2;
 	}
-	m_encoder = new VideoEncoder( ts, alternate_pid, m_decoder->format(), m_decoder->width(), m_decoder->height(), m_decoder->timebase(), opt_rate < 0 ? m_decoder->bitrate() : opt_rate, opt_frames < 0 ? m_decoder->approxFPS() : opt_frames );
+	/// \todo Instead of a default quality value, I'd like to have an approximate matching quality with the original video having been decoded.
+	m_encoder = new VideoEncoder( ts, alternate_pid, m_decoder->format(), m_decoder->width(), m_decoder->height(), m_decoder->timebase(), opt_quality < 0 ? 23 : opt_quality, opt_frames < 0 ? m_decoder->approxFPS() : opt_frames );
 	if ( m_encoder == NULL ) {
 		XLOG_ERROR("Failed to create video encoder" );
 		return -1;

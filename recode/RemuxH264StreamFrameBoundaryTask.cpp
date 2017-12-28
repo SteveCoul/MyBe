@@ -7,13 +7,15 @@
 
 #include "RemuxH264StreamFrameBoundaryTask.hpp"
 
-RemuxH264StreamFrameBoundaryTask::RemuxH264StreamFrameBoundaryTask( std::vector<TSPacket*>* ret, TS::Stream* source, const char* dump_file ) 
-	: m_output( ret )
+RemuxH264StreamFrameBoundaryTask::RemuxH264StreamFrameBoundaryTask( std::string title, std::vector<TSPacket*>* ret, TS::Stream* source, const char* dump_file ) 
+	: m_title( title )
+	, m_output( ret )
 	, m_source( source )
 	, m_pts( 0xFFFFFFFFFFFFFFFFUL )
 	, m_dts( 0xFFFFFFFFFFFFFFFFUL )
 	, m_fd(-1)
 	, m_stream_id(0)
+	, m_counter(0)
 	{
 
 	if ( dump_file ) {
@@ -69,6 +71,8 @@ const uint8_t* makeTSPacket( uint8_t* output, unsigned pid, unsigned* p_cc, cons
 void RemuxH264StreamFrameBoundaryTask::deliver( const uint8_t* ptr, size_t len ) {
 //	XLOG_INFO("PTS %llu DTS %llu", m_pts, m_dts );
 //	XLOG_HEXDUMP_INFO( ptr, len );
+
+	XLOG_INFO("% 4d] NALU %s PTS %llu, type 0x%02X, size %u", m_counter++, m_title.c_str(), m_pts, ptr[2] == 0x01 ? ptr[3] : ptr[4], (unsigned)len );
 
 	// FIXME 
 	m_dts = 0xFFFFFFFFFFFFFFFF;
@@ -190,19 +194,10 @@ void RemuxH264StreamFrameBoundaryTask::pesCallback( void* opaque, PES* pes ) {
 	}
 }
 
-int RemuxH264StreamFrameBoundaryTask::run( std::vector<TSPacket*>* ret, TS::Stream* source, const char* dump_file ) {
-	RemuxH264StreamFrameBoundaryTask t( ret, source, dump_file );
+int RemuxH264StreamFrameBoundaryTask::run( std::string title, std::vector<TSPacket*>* ret, TS::Stream* source, const char* dump_file ) {
+	RemuxH264StreamFrameBoundaryTask t( title, ret, source, dump_file );
 	Misc::pesScan( source, &t );
 	t.pesCallback( NULL, NULL );
 	return 0;
 }
-
-
-#if 0
-
-
-
-
-	for ( unsigned i = 0; i < source->numPackets(); i++ )
-#endif
 
