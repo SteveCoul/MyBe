@@ -9,6 +9,7 @@
 
 #include <vector>
 
+/// Simple in memory decoder for MyBe files.
 class ReferenceDecoder {
 public:
 	ReferenceDecoder() 
@@ -37,6 +38,10 @@ public:
 		fprintf( stderr, "Destroyed ReferenceDecoder\n" );
 	}
 
+	/// \brief		Add more source data to the incoming sample.
+	/// \param[in]	pointer		Pointer to data.
+	/// \param[in]	length		Length of data.
+	/// \return number of bytes consumed or -1 on error.
 	int add( const void* pointer, size_t length ) {
 		uint8_t* ptr = (uint8_t*)pointer;
 		m_source.insert( m_source.end(), ptr, ptr+length );
@@ -44,6 +49,9 @@ public:
 		return length;
 	}
 
+	/// \brief		Given the current download state - return if possible a segment that has no video.
+	/// \param[out]	p_length	Size of returned video.
+	/// \return pointer to transport segment if possible to create or NULL if insufficient data received.
 	void* generateNoVideo( size_t* p_length ) {
 		if ( m_video_no ) {
 			p_length[0] = m_size_video_no;
@@ -75,6 +83,9 @@ public:
 		return m_video_no;
 	}
 	
+	/// \brief		Given the current download state - return if possible a segment that has a single Iframe.
+	/// \param[out]	p_length	Size of returned video.
+	/// \return pointer to transport segment if possible to create or NULL if insufficient data received.
 	void* generateSingleFrameVideo( size_t* p_length ) {
 		if ( m_video_single ) {
 			p_length[0] = m_size_video_single;
@@ -82,8 +93,6 @@ public:
 		}
 
 		if ( !decodeHeader() ) return NULL;
-
-		// FIXME : need to fill over or otherwise null out any bytes in the last frame not part of the IFRAME sequence
 
 		size_t out_len = m_misc_length + m_header_size + (((m_first_iframe_keep+187)/188)*188);
 
@@ -111,6 +120,9 @@ public:
 		return m_video_single;
 	}
 
+	/// \brief		Given the current download state - return if possible a segment that has the alternate video stream.
+	/// \param[out]	p_length	Size of returned video.
+	/// \return pointer to transport segment if possible to create or NULL if insufficient data received.
 	void* generateAlternateVideo( size_t* p_length ) {
 
 		/* For now, just output the alternate stream, later I want to stitch the original iframe on the bulk of the alternate */
@@ -121,8 +133,6 @@ public:
 		}
 
 		if ( !decodeHeader() ) return NULL;
-
-		// FIXME : need to fill over or otherwise null out any bytes in the last frame not part of the IFRAME sequence
 
 		size_t out_len = m_misc_length + m_header_size + (((m_first_iframe_keep+187)/188)*188) + m_alternate_total;
 
@@ -155,7 +165,7 @@ public:
 		memmove( dst, src, m_alternate_total );
 		
 		for ( unsigned int i = 0; i < m_alternate_total; i+=188 ) {
-			// HACK!
+			/// \bug HACK!
 			dst[i+1] = ( dst[i+1] & 0xE0 ) | ( ( 257 >> 8 ) & 0x1F );
 			dst[i+2] = 257 & 0xFF;
 		}
@@ -164,6 +174,9 @@ public:
 		return m_video_alternate;
 	}
 
+	/// \brief		Given the current download state - return if possible a segment that has the original full video stream.
+	/// \param[out]	p_length	Size of returned video.
+	/// \return pointer to transport segment if possible to create or NULL if insufficient data received.
 	void* generateFullVideo( size_t* p_length ) {
 
 		if ( m_video_full ) {
@@ -208,6 +221,9 @@ public:
 		return m_video_full;
 	}
 
+	/// \brief		Given the current download state - return the best video we can.
+	/// \param[out]	p_length	Size of returned video.
+	/// \return pointer to transport segment if possible to create or NULL if insufficient data received.
 	void* generateBestVideo( size_t* p_length ) {
 		void* rc;
 		rc = generateFullVideo( p_length );
@@ -220,6 +236,8 @@ public:
 		return rc;
 	}
 private:
+	/// \brief		Scan source for metadata and decode it.
+	/// \return true of the data was decoded.
 	bool decodeHeader() {
 
 		if ( m_decoded_header ) return true;
@@ -301,21 +319,21 @@ private:
 		}
 	}
 private:
-	std::vector<uint8_t>		m_source;
-	bool						m_decoded_header;
-	unsigned int				m_misc_length;			/* #bytes after magic section before iframe */
-	unsigned int				m_first_iframe_keep;	/* #bytes of data for the first IFrame. Note that this is not necessarily TS Frame aligned */
-	unsigned int				m_alternate_total;		/* #bytes of alternate video stream */
-	unsigned int				m_alternate_iframe_keep;/* #bytes of alternate video first iframe, not TS frame aligned */
-	unsigned int				m_header_size;			/* #bytes of PAT, PMT before magic section */
-	uint8_t*					m_video_no;
-	size_t						m_size_video_no;
-	uint8_t*					m_video_single;
-	size_t						m_size_video_single;
-	uint8_t*					m_video_alternate;
-	size_t						m_size_video_alternate;
-	uint8_t*					m_video_full;
-	size_t						m_size_video_full;
+	std::vector<uint8_t>		m_source;				///< All stored source data.
+	bool						m_decoded_header;		///< Flag set when metadata found and decoded.
+	unsigned int				m_misc_length;			///< bytes after magic section before iframe
+	unsigned int				m_first_iframe_keep;	///< bytes of data for the first IFrame. Note that this is not necessarily TS Frame aligned ( will be )
+	unsigned int				m_alternate_total;		///< bytes of alternate video stream
+	unsigned int				m_alternate_iframe_keep;///< bytes of alternate video first iframe, not TS frame aligned ( will be )
+	unsigned int				m_header_size;			///< bytes of PAT, PMT before magic section
+	uint8_t*					m_video_no;				///< Output TS pointer for segment with no video.
+	size_t						m_size_video_no;		///< Video size.
+	uint8_t*					m_video_single;			///< Output TS pointer for segment with single iframe.
+	size_t						m_size_video_single;	///< Video size.
+	uint8_t*					m_video_alternate;		///< Output TS pointer for segment with alternate video.
+	size_t						m_size_video_alternate;	///< Video size.
+	uint8_t*					m_video_full;			///< Output TS pointer for segment with full video.
+	size_t						m_size_video_full;		///< Video size.
 };
 
 #endif
