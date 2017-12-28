@@ -21,6 +21,7 @@ private:
 	~Process_Recode();
 
 	/// \brief		Utility function to open and mmap a file
+	/// \todo		Make this a Misc function
 	/// \param[in]	path		Source filename
 	/// \param[out]	p_length	Where to return file length on success.
 	/// \return pointer to memory copy of file, or NULL on error.
