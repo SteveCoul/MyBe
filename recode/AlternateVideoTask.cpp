@@ -1,4 +1,10 @@
 
+/// \class AlternateVideoTask
+/// The implementation for the default alternate video is pretty sparse. It simply decodes the original video using a VideoDecoder instance,
+/// and encodes the alternate video using a VideoEncoder instance.
+///
+/// The encoder instance currently owns the image pipeline which we use to create a shorter video segment. \see ImagePipeline
+
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
@@ -11,10 +17,12 @@
 #include "VideoEncoder.hpp"
 #include "xlog.hpp"
 
+/// Simply passes the incoming decoded video frame to the encoder.
 void AlternateVideoTask::videoIncoming( AVFrame* frame ) {
 	m_encoder->newFrame( frame );
 }
 
+/// Notifies the encoder that video decode finished.
 void AlternateVideoTask::videoComplete() {
 	m_encoder->endOfVideo();
 }
