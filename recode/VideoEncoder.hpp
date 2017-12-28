@@ -12,6 +12,7 @@ extern "C" {
 #include "ImagePipeline.hpp"
 #include "TS.hpp"
 
+/// Class used to encode a video from images using ffmpeg
 class VideoEncoder {
 public:
     VideoEncoder( TS* ts, unsigned int pid, enum AVPixelFormat format, int width, int height, AVRational time_base, int64_t bit_rate, int opt_frames );

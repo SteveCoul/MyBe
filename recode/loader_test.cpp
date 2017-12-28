@@ -5,6 +5,7 @@
 
 #include "MyBeLoader.hpp"
 
+/// A test application.
 class App : public MyBeLoader::Callback {
 public:
 
@@ -17,6 +18,10 @@ public:
 		(void)sem_post( m_wait );
 	}
 
+	/// Application instance entry point.
+	/// \param[in]	argc	Count of incoming arguments.
+	/// \param[in]	argv	Incoming arguments.
+	/// \return 0 on success, else error.
 	int main( int argc, char** argv ) {
 		m_wait = sem_open("mybetest", O_CREAT | O_EXCL, 0666 );
 		(void)sem_wait( m_wait );
@@ -37,6 +42,10 @@ private:
 	sem_t*			m_wait;
 };
 
+/// Process entry point. Create and run application instance.
+/// \param[in]	argc	Count of incoming arguments.
+/// \param[in]	argv	Incoming arguments.
+/// \return 0 on success, else error.
 int main( int argc, char** argv ) {
 	App app;
 	return app.main( argc, argv );

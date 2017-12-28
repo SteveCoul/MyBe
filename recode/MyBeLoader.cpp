@@ -11,8 +11,11 @@
 #include "ReferenceDecoder.hpp"
 #include "MyBeLoader.hpp"
 
+/// Implementation of the MyBeLoader class
 class Impl {
 public:
+	/// Return the current system time in milliseconds.
+	/// \return time.
 	static unsigned long long NOW() {
 		struct timeval tv;
 		(void)gettimeofday( &tv, NULL );
@@ -22,8 +25,14 @@ public:
 		return rc;
 	};
 
+	/// A download session.
 	class Session {
 	public:
+		/// Create a download session.
+		/// \param[in]	url			URL of resource to download.
+		/// \param[in]	callback	Callback instance to invoke on success or error.
+		/// \param[in]	timeout		Millisecond time offset after which loader will return the best segment it can.
+		/// \param[in]	manager		The parent of this download session.
 		Session( const char* url, MyBeLoader::Callback* callback, unsigned int timeout, Impl* manager )
 			: m_timeout( timeout )
 			, m_callback( callback )
@@ -41,6 +50,8 @@ public:
 			(void)curl_easy_cleanup( m_curl );
 		}
 
+		/// Start download.
+		/// \return true on success.
 		bool start() {
 			m_start_time = NOW();
 			/* do I need this to be locked? */
@@ -49,23 +60,26 @@ public:
 			return true;
 		}
 
+		/// Force download to return the video segment at the earliest possiblity. (Single IFrame)
 		void forceEarly() {
 			assert(0);
 		}
 
+		/// Force download to return the video segment with the alternate video. (Lower framerate/quality)
 		void forceBetter() {
 			assert(0);
 		}
 
+		/// Force download to return the video segment with the original video.
 		void forceBest() {
 			assert(0);
 		}
 
-		CURL*					m_curl;
-		unsigned int			m_timeout;
-		unsigned int			m_start_time;
-		MyBeLoader::Callback*	m_callback;
-		Impl*					m_manager;
+		CURL*					m_curl;			///< The CURL handle for this download.
+		unsigned int			m_timeout;		///< The millisecond timeout for this download at which it would return the best video it can.
+		unsigned int			m_start_time;	///< Time download started.
+		MyBeLoader::Callback*	m_callback;		///< Callback for download error or success.
+		Impl*					m_manager;		///< Parent.
 	};
 public:
 	Impl() 
@@ -86,6 +100,11 @@ public:
 		curl_multi_cleanup( m_curl_multi );
 	}
 
+	/// Create a download session.
+	/// \param[in]	url			URL of resource to download.
+	/// \param[in]	callback	Callback instance to invoke on success or error.
+	/// \param[in]	timeout		Millisecond time offset after which loader will return the best segment it can.
+	/// \return Session pointer.
 	Impl::Session* createSession( const char* url, MyBeLoader::Callback* callback, unsigned int timeout ) {
 		Session* s = new Session( url, callback, timeout, this );
 		//lock();
