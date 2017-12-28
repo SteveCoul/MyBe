@@ -1,14 +1,4 @@
 
-/* This maybe a factory later for alternate implementations.
-
-   Let's start with an initial one, where we duplicate frames to get the P/B frames as 
-   tiny as possible, but retain the timing of the original video.
-
-	FIXME
-
-		Lots of assumptions here, its YUV 422 format, never changes alignment/linesize etc.
-*/
-
 #include "xlog.hpp"
 
 #include "ImagePipeline.hpp"
@@ -44,8 +34,8 @@ ImagePipeline::~ImagePipeline() {
 	delete[] m_save_v;
 }
 
+/// \bug	Doesn't check for errors etc.
 void ImagePipeline::reset( unsigned int width, unsigned int height, unsigned int depth ) {
-	// FIXME Errors
 	m_y = new unsigned char[width*height];
 	m_u = new unsigned char[(width/2)*(height/2)];
 	m_v = new unsigned char[(width/2)*(height/2)];
