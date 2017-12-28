@@ -7,15 +7,26 @@
 
 #include "PES.hpp"
 
+/// \brief Performs the task of looking for the end of the initial IFrame in a PES formatted H264 stream.
+///
+/// Successive calls to pes() add new incoming data for an H264 stream. The PES payloads are extracted,
+/// and the content scanned looking for NALU headers. Once a header for an IFrame is found the scanner
+/// looks for one more NALU header prefix, this is taken to be the end of the data needed for an initial
+/// iframe. 
+///
+/// The PES packet contains a map() that is used to convert this position to an position in the original 
+/// stream so that the caller knows how much data must be copied to encapsulate the first  Iframe in 
+/// a video.
 class FindIDRTask {
 private:
-	int				m_scan_state;
-	int				m_pes_state;
-	unsigned int	m_pointer;
-	unsigned int	m_pointer2;
-	unsigned int	m_first_nalu_after_iframe;
+	int				m_scan_state;				///< internal scanning state.
+	int				m_pes_state;				///< internal scanning state.
+	unsigned int	m_pointer;					///< internal scanning state.
+	unsigned int	m_pointer2;					///< internal scanning state.
+	unsigned int	m_first_nalu_after_iframe;	///< result.
 
 public:
+	/// New object.
 	FindIDRTask() 
 		: m_scan_state(0)
 		, m_pes_state(0)
@@ -24,6 +35,8 @@ public:
 		, m_first_nalu_after_iframe(0)
 		{}
 
+	/// \brief		Add incoming PES formatted H264 stream to the processor.
+	/// \param[in]	pes		Incoming packet.
 	void pes( PES* pes ) {
 		size_t ps;
 		const uint8_t* payload = pes->payload( &ps );
@@ -83,6 +96,8 @@ public:
 		}
 	}
 
+	/// \brief		Return the result of the processing.
+	/// \return		The byte offset of the first NALU after the initial iIFrame.
 	unsigned int result() { return m_first_nalu_after_iframe; }
 };
 
