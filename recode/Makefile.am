@@ -5,7 +5,6 @@ recode_CXXFLAGS=
 recode_CXXFLAGS+=-I$(FFMPEG_INCLUDE_DIR)
 recode_SOURCES=
 recode_SOURCES+=AlternateVideoTask.cpp
-recode_SOURCES+=entrypoint.cpp
 recode_SOURCES+=ImagePipeline.cpp
 recode_SOURCES+=ImageWriter.cpp
 recode_SOURCES+=Main.cpp

@@ -292,4 +292,7 @@ void Main::pesCallback( void* opaque, PES* pes ) {
 	f->pes( pes );
 }
 
+int main( int argc, char** argv ) {
+	return Main::main( argc, argv );
+}
 
