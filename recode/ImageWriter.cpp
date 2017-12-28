@@ -4,6 +4,7 @@
 
 #include "ImageWriter.hpp"
 
+/// \bug Currently converts to greyscale
 static void YUV2RGB( unsigned char* pixel, int Y, int U, int V ) {
 	// FIXME
 	pixel[0] = Y;
@@ -11,6 +12,7 @@ static void YUV2RGB( unsigned char* pixel, int Y, int U, int V ) {
 	pixel[2] = Y;
 }
 
+/// \bug no error checking
 int ImageWriter::writeYUVImage( const char* filename, unsigned char* Y, unsigned char* U, unsigned char* V, 
 							    unsigned int Ylen, unsigned int Ulen, unsigned int Vlen,
                                 unsigned int width, unsigned int height ) {
