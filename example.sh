@@ -7,7 +7,7 @@ rm -f full.ts
 rm -f combined.ts
 for FILE in ../test_data/*.ts; do
 	rm -f output.ts*
-	./recode/recode -i $FILE -r 1000
+	./recode/recode -i $FILE -q 32 -f 5
 	./recode/referencedecoder_test output.ts
 	cat $FILE >> original.ts
 	cat output.ts >> combined.ts
