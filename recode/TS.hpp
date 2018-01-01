@@ -81,6 +81,11 @@ public:
 	/// \param[in]	source	List of new TS packets for given PID.
 	/// \return 0 on success.
 	int replaceStream( unsigned pid, std::vector<TSPacket*>*source );
+
+	/// \brief		Cut a number of packets from the start of a PID stream
+	/// \param[in]	pid		PID to operate on.
+	/// \param[in]	count	Number of ts packets to trim
+	void trimPIDStream( unsigned int pid, unsigned int count );
 private:
 	std::vector<TSPacket*>	m_packets;					///< List of packets in the stream.
 	std::vector<TSPacket*>	m_packets_by_pid[ 8192 ];	///< Pointers to store TS packets per pid.

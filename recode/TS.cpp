@@ -84,11 +84,7 @@ int TS::writePIDStream( int fd, unsigned pid, int skip, int count ) {
 
 void TS::removeStream( unsigned pid ) {
 	while ( m_packets_by_pid[ pid ].size() ) {
-		std::vector<TSPacket*>::iterator it;
-		it = std::find( m_packets.begin(), m_packets.end(), m_packets_by_pid[pid].at(0) );
-		delete *it;
-		m_packets.erase( it );
-		m_packets_by_pid[pid].erase( m_packets_by_pid[pid].begin() );	
+		trimPIDStream( pid, 1 );
 	}
 }
 	
@@ -98,5 +94,15 @@ int TS::replaceStream( unsigned pid, std::vector<TSPacket*>*source ) {
 		add( *it );
 	}
 	return 0;
+}
+
+void TS::trimPIDStream( unsigned int pid, unsigned int count ) {
+	while ( count-- ) {
+		std::vector<TSPacket*>::iterator it;
+		it = std::find( m_packets.begin(), m_packets.end(), m_packets_by_pid[pid].at(0) );	
+		delete *it;
+		m_packets.erase( it );
+		m_packets_by_pid[pid].erase( m_packets_by_pid[pid].begin() );	
+	}
 }
 
