@@ -11,10 +11,15 @@ int VideoDecoder::avioread( uint8_t* buf, int buf_size ) {
 
 	if ( m_next_packet == m_ts_stream->numPackets() ) return AVERROR_EOF;
 
-	TSPacket* pkt = m_ts_stream->packet( m_next_packet++ );
-
-	memcpy( buf, pkt->ptr(), 188 );
-	return 188;
+	int rc = 0;
+	while ( ( buf_size >= 188 ) && ( m_next_packet != m_ts_stream->numPackets() ) ) {
+		TSPacket* pkt = m_ts_stream->packet( m_next_packet++ );
+		memcpy( buf, pkt->ptr(), 188 );
+		rc+=188;
+		buf_size-=188;
+		buf+=188;
+	}
+	return rc;
 }
 
 VideoDecoder::VideoDecoder( TS* ts, unsigned int pid, VideoDecoder::Callback* callback ) 
