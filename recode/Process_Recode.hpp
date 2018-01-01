@@ -29,14 +29,18 @@ private:
 
 	/// \brief		Dump all the packets in the TS of a given PID to a file.
 	/// \param[in]	path		Destination filename
-	/// \param[in]	pid			PID to dump
-	void pidToFile( std::string path, unsigned int pid );
+	/// \param[in]	pid			PID to dump	
+	/// \param[in]	skip		+ve value is number of packets to initially skip.
+	/// \param[in]	count		+ve value is maximum number of packets to write, else write all.
+	void pidToFile( std::string path, unsigned int pid, int skip, int count );
 
 	/// \brief		If required, decode original and alternate video streams and store on disk.
 	void decodeVideoStreamsAsRequired();
 
 	/// \brief		Save any intermediate streams as required.
-	void saveVideoStreamsAsRequired();
+	/// \param[in]	iframe_original_len		Length of the IDR portion of the original video.
+	/// \param[in]	iframe_alternate_len	Length of the IDR portion of the alternate video.
+	void saveVideoStreamsAsRequired( unsigned iframe_original_len, unsigned iframe_alternate_len );
 
 	/// \brief		Scan the transport stream and look for the first PAT, store the PMT of the first program.
 	/// \return true on success.

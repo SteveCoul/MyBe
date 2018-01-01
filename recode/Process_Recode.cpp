@@ -59,10 +59,10 @@ void* Process_Recode::openAndMap( std::string path, size_t* p_length ) {
 	return rc;
 }
 
-void Process_Recode::pidToFile( std::string path, unsigned int pid ) {
+void Process_Recode::pidToFile( std::string path, unsigned int pid, int skip = -1, int count = -1 ) {
 	int ofd;
 	ofd = open( path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666 );
-	m_ts->writePIDStream( ofd, pid );
+	m_ts->writePIDStream( ofd, pid, skip, count );
 	(void)close( ofd );
 }
 
@@ -73,10 +73,14 @@ void Process_Recode::decodeVideoStreamsAsRequired() {
 	}
 }
 
-void Process_Recode::saveVideoStreamsAsRequired() {
+void Process_Recode::saveVideoStreamsAsRequired( unsigned iframe_len, unsigned alternate_iframe_len ) {
 	if ( m_opts.saveVideos() ) {
 		pidToFile( "tmp_original.ts", m_video_pid );
 		pidToFile( "tmp_new.ts", m_alternate_pid );
+		pidToFile( "tmp_original_iframe.ts", m_video_pid, 0, iframe_len / 188 );
+		pidToFile( "tmp_new_iframe.ts", m_alternate_pid, 0, alternate_iframe_len / 188 );
+		pidToFile( "tmp_original_body.ts", m_video_pid, iframe_len / 188, -1 );
+		pidToFile( "tmp_new_body.ts", m_alternate_pid, alternate_iframe_len / 188, -1 );
 	}
 }
 
@@ -316,7 +320,7 @@ int Process_Recode::run( int argc, char** argv ) {
 
 						ret = writeOutputFile( findVideo.result(), findAlternate.result() );
 						if ( ret > 0 ) {
-							saveVideoStreamsAsRequired( );
+							saveVideoStreamsAsRequired( findVideo.result(), findAlternate.result() );
 							decodeVideoStreamsAsRequired();
 							XLOG_INFO( "Initial Segment was %u, new segment %u", (unsigned)m_raw_size, (unsigned)ret );
 							ret = 0;
