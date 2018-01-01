@@ -16,6 +16,7 @@ RemuxH264StreamFrameBoundaryTask::RemuxH264StreamFrameBoundaryTask( std::string 
 	, m_fd(-1)
 	, m_stream_id(0)
 	, m_counter(0)
+	, m_ts_cc(0)
 	{
 
 	if ( dump_file ) {
@@ -84,27 +85,26 @@ void RemuxH264StreamFrameBoundaryTask::deliver( const uint8_t* ptr, size_t len )
 	}
 
 	unsigned PID=m_source->pid();
-	unsigned CC=0;
 	uint8_t packet[188];
 
 	ptr = pes->data();
 	len = pes->size();
 	
-	ptr = makeTSPacket( packet, PID, &CC, ptr, &len );
+	ptr = makeTSPacket( packet, PID, &m_ts_cc, ptr, &len );
 	packet[1] |= 0x40;
 	if ( m_fd >= 0 )
 		(void)write( m_fd, packet, 188 );
 	m_output->push_back( new TSPacket( packet, true ) );
 
 	while ( len >= 184 ) {
-		ptr = makeTSPacket( packet, PID, &CC, ptr, &len );
+		ptr = makeTSPacket( packet, PID, &m_ts_cc, ptr, &len );
 		if ( m_fd >= 0 )
 			(void)write( m_fd, packet, 188 );
 		m_output->push_back( new TSPacket( packet, true ) );
 
 	}
 	if ( len != 0 ) {
-		ptr = makeTSPacket( packet, PID, &CC, ptr, &len );
+		ptr = makeTSPacket( packet, PID, &m_ts_cc, ptr, &len );
 		if ( m_fd >= 0 )
 			(void)write( m_fd, packet, 188 );
 		m_output->push_back( new TSPacket( packet, true ) );
