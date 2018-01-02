@@ -56,7 +56,6 @@ private:
 	unsigned long long			m_dts;			///< Current DTS.
 	int							m_fd;			///< File descriptor of where to save debug data if non -1.
 	unsigned int				m_stream_id;	///< Stream Id of video stream.
-	unsigned int				m_counter;		///< Nalu written counter
 	unsigned int				m_ts_cc;		///< TS packet continuity counter
 };
 

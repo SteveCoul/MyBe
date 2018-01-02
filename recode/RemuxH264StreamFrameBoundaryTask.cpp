@@ -7,6 +7,62 @@
 
 #include "RemuxH264StreamFrameBoundaryTask.hpp"
 
+/* **************************************************************** */
+// FIXME make this a class
+
+static int counter = 0;
+
+static
+void h264dump_raw( const uint8_t* ptr, size_t len ) {
+	counter++;
+
+	if ( ptr == NULL ) {
+		XLOG_INFO("% 5d] Invalid header", counter );
+		return;
+	}
+
+	unsigned int nal_type = ptr[0] & 0x1F;
+	unsigned int nal_ref_idc = (ptr[0]&0x60) >> 5;
+
+	switch( nal_type ) {
+	case 1:
+		XLOG_INFO("% 5d] IDR", counter );
+		break;
+	case 5:
+		XLOG_INFO("% 5d] non-IDR", counter );
+		break;
+	case 7:
+		XLOG_INFO("% 5d] Sequence Parameter set", counter );
+		XLOG_HEXDUMP_INFO( ptr, len );
+		break;
+	case 8:
+		XLOG_INFO("% 5d] Picture Parameter set", counter );
+		XLOG_HEXDUMP_INFO( ptr, len );
+		break;
+	case 9:
+		XLOG_INFO("% 5d] Access Unit Delimiter, nal_ref_idc %d", counter, nal_ref_idc );
+		break;
+	default:
+		XLOG_INFO("% 5d] Unhandled type %d", counter, nal_type );
+		break;
+	}
+}
+
+static
+void h264dump( const uint8_t* ptr, size_t len ) {
+	if ( ( ptr[0] == 0x00 ) && ( ptr[1] == 0x00 ) && ( ptr[2] == 0x00 ) && ( ptr[3] == 0x01 ) ) h264dump_raw( ptr+4, len-4 );
+	else if ( ( ptr[0] == 0x00 ) && ( ptr[1] == 0x00 ) && ( ptr[2] == 0x01 ) ) h264dump_raw( ptr+3, len-3 );
+	else h264dump_raw( NULL, 0 );
+}
+
+static
+void h264dump_init( const char* title ) {
+	counter = 0;
+	XLOG_INFO("--------- %s ----------------------", title );
+}
+
+/* **************************************************************** */
+
 RemuxH264StreamFrameBoundaryTask::RemuxH264StreamFrameBoundaryTask( std::string title, std::vector<TSPacket*>* ret, TS::Stream* source, const char* dump_file ) 
 	: m_title( title )
 	, m_output( ret )
@@ -15,9 +71,10 @@ RemuxH264StreamFrameBoundaryTask::RemuxH264StreamFrameBoundaryTask( std::string 
 	, m_dts( 0xFFFFFFFFFFFFFFFFUL )
 	, m_fd(-1)
 	, m_stream_id(0)
-	, m_counter(0)
 	, m_ts_cc(0)
 	{
+
+	h264dump_init( title.c_str() );
 
 	if ( dump_file ) {
 		m_fd = open( dump_file, O_CREAT | O_WRONLY | O_TRUNC, 0666 );
@@ -73,7 +130,7 @@ void RemuxH264StreamFrameBoundaryTask::deliver( const uint8_t* ptr, size_t len )
 //	XLOG_INFO("PTS %llu DTS %llu", m_pts, m_dts );
 //	XLOG_HEXDUMP_INFO( ptr, len );
 
-	XLOG_INFO("% 4d] NALU %s PTS %llu, type 0x%02X, size %u", m_counter++, m_title.c_str(), m_pts, ptr[2] == 0x01 ? ptr[3] : ptr[4], (unsigned)len );
+	h264dump( ptr, len );
 
 	// FIXME 
 	m_dts = 0xFFFFFFFFFFFFFFFF;
