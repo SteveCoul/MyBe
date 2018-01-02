@@ -40,3 +40,6 @@ loader_test_LDADD+=-lcurl
 bin_PROGRAMS+=referencedecoder_test
 referencedecoder_test_SOURCES=referencedecoder_test.cpp
 
+bin_PROGRAMS+=pidswap
+pidswap_SOURCES=Process_PIDSwap.cpp
+
