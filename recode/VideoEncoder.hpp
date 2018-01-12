@@ -25,6 +25,8 @@ private:
     void add_stream( enum AVCodecID codec_id);
 	int write( uint8_t* buf, int buf_size );
 private:
+	static const size_t		ENCODER_BUFFER_SIZE = 4096*188;
+private:
 	ImagePipeline			m_pipeline;
     AVOutputFormat*			m_output_format;
     AVFormatContext*		m_format_context;
