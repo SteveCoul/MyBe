@@ -16,7 +16,7 @@ int VideoEncoder::write( uint8_t* buf, int buf_size ) {
 	int ret = buf_size;
 	while ( buf_size >= 188 ) {
 		TSPacket* pkt = new TSPacket( buf, true /* with copy so we can change pid */ );
-		if ( pkt->pid() == 256 ) {
+		if ( pkt->pid() == 256 ) {	/// \todo Stop assuming we only want to output video pid 256
 			pkt->changePID( m_pid );
 			m_ts->add( pkt );	/* TS takes ownership */
 		} else {
@@ -60,50 +60,55 @@ int VideoEncoder::init() {
 
 	av_register_all();
 
-	m_io_context_buffer = (uint8_t*)av_malloc( 4096*188 );
+	m_io_context_buffer = (uint8_t*)av_malloc( ENCODER_BUFFER_SIZE );
 	if ( m_io_context_buffer == NULL ) {
 		XLOG_ERROR( "Failed to alloc context buffer" );
-		return -1;
+		ret = -1;
+	} else {
+
+		m_io_context = avio_alloc_context( m_io_context_buffer, ENCODER_BUFFER_SIZE, 1, this, NULL, &aviowrite_wrapper, NULL );
+		if ( !m_io_context ) {
+			XLOG_ERROR( "Failed to allocate IO context" );
+			ret = -1;
+		} else {
+
+			avformat_alloc_output_context2(&m_format_context, NULL, "mpegts", NULL );
+			if (!m_format_context) {
+				XLOG_ERROR( "Failed to allocate output context");
+				ret = -1;
+			} else {
+
+				m_format_context->pb = m_io_context;
+				m_output_format = m_format_context->oformat;
+				m_output_format->video_codec = AV_CODEC_ID_H264;
+				//m_output_format->video_codec = AV_CODEC_ID_MPEG4;
+
+				add_stream( m_output_format->video_codec);
+
+				ret = avcodec_open2(m_codec_context, m_codec, &opts);
+				if (ret < 0) {
+					XLOG_ERROR( "Could not open video codec" );
+					ret = -1;
+				} else {
+
+					ret = avcodec_parameters_from_context(m_stream->codecpar, m_codec_context);
+					if (ret < 0) {
+						XLOG_ERROR( "Could not copy the stream parameters");
+						ret = -1;
+					} else {
+						ret = avformat_write_header(m_format_context, &opts);
+						if (ret < 0) {
+							XLOG_ERROR( "Error occurred when opening output file" );
+							ret = -1;
+						} else {
+							ret = 0;
+						}
+					}
+				}
+			}
+		}
 	}
-
-	m_io_context = avio_alloc_context( m_io_context_buffer, 4096*188, 1, this, NULL, &aviowrite_wrapper, NULL );
-	if ( !m_io_context ) {
-		XLOG_ERROR( "Failed to allocate IO context" );
-		return -1;
-	}
-
-	avformat_alloc_output_context2(&m_format_context, NULL, "mpegts", NULL );
-	if (!m_format_context)
-		return -1;
-
-	m_format_context->pb = m_io_context;
-
-	m_output_format = m_format_context->oformat;
-
-	m_output_format->video_codec = AV_CODEC_ID_H264;
-	//m_output_format->video_codec = AV_CODEC_ID_MPEG4;
-
-	add_stream( m_output_format->video_codec);
-
-	ret = avcodec_open2(m_codec_context, m_codec, &opts);
-	if (ret < 0) {
-		XLOG_ERROR( "Could not open video codec" );
-		return -1;
-	}
-
-	ret = avcodec_parameters_from_context(m_stream->codecpar, m_codec_context);
-	if (ret < 0) {
-		XLOG_ERROR( "Could not copy the stream parameters");
-		return -1;
-	}
-
-	ret = avformat_write_header(m_format_context, &opts);
-	if (ret < 0) {
-		XLOG_ERROR( "Error occurred when opening output file" );
-		return -1;
-	}
-
-	return 0;
+	return ret;
 }
 
 void VideoEncoder::endOfVideo() {
@@ -167,7 +172,7 @@ void VideoEncoder::add_stream( enum AVCodecID codec_id) {
 	m_codec_context->width    = m_width;
 	m_codec_context->height   = m_height;
 	m_stream->time_base = m_time_base;
-	m_codec_context->time_base       = (AVRational){1001, 30000};	// HACK : FIXME
+	m_codec_context->time_base       = (AVRational){1001, 30000};	/// \todo get the proper framerate/timing from source video and pass it into encoder
 	m_codec_context->gop_size      = 99999;
 	m_codec_context->pix_fmt       = m_pixel_format;
 
