@@ -219,8 +219,12 @@ int Process_Recode::writeOutputFile( unsigned int iframe_original_len, unsigned 
 
 			XLOG_INFO( "%u written - write Stuff", written );
 			for ( unsigned int i = 0; i < 8192; i++ ) 
-				if ( ( i != 0 ) && ( i != m_pmt_pid ) && ( i != m_video_pid ) && ( i != m_alternate_pid ) )
-					written+= m_ts->writePIDStream( ofd, i );
+				if ( ( i != 0 ) && ( i != m_pmt_pid ) && ( i != m_video_pid ) && ( i != m_alternate_pid ) ) {
+					if ( m_ts->sizePIDStream( i ) != 0 ) {
+						XLOG_INFO("%u written - write PID %u", written, i );
+						written+= m_ts->writePIDStream( ofd, i );
+					}
+				}
 
 			unsigned int iframe_packets = ( iframe_original_len + 187 ) / 188;
 
@@ -324,6 +328,13 @@ int Process_Recode::run( int argc, char** argv ) {
 
 						FindIDRTask findAlternate;
 						Misc::pesScan( m_ts->stream( m_alternate_pid ), this, &findAlternate );
+
+						/* Strip some pids. Recurring data in some source videos that we just don't need/want and 
+						   cannot reorder easily in the loader because they have no PTS etc. */
+						if ( m_ts->sizePIDStream( 17 ) != 0 ) {
+							XLOG_WARNING("Stripping SDT/BAT");
+							m_ts->removeStream( 17 );
+						}
 
 						ret = writeOutputFile( findVideo.result(), findAlternate.result() );
 						if ( ret > 0 ) {
