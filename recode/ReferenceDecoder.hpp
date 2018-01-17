@@ -80,6 +80,8 @@ public:
 		memmove( dst, src, m_misc_length );
 
 		p_length[0] = m_size_video_no;
+
+		sortPackets( m_video_no, m_size_video_no );
 		return m_video_no;
 	}
 	
@@ -117,6 +119,7 @@ public:
 		memmove( dst, src, (((m_first_iframe_keep+187)/188)*188) );
 
 		p_length[0] = m_size_video_single;
+		sortPackets( m_video_single, m_size_video_single );
 		return m_video_single;
 	}
 
@@ -171,6 +174,7 @@ public:
 		}
 
 		p_length[0] = m_size_video_alternate;
+		sortPackets( m_video_alternate, m_size_video_alternate );
 		return m_video_alternate;
 	}
 
@@ -218,6 +222,7 @@ public:
 		memmove( dst, src, m_source.size() - m_header_size - 188 - m_misc_length - iframe - m_alternate_total );
 
 		p_length[0] = m_size_video_full;
+		sortPackets( m_video_full, m_size_video_full );
 		return m_video_full;
 	}
 
@@ -318,6 +323,11 @@ private:
 			return true;
 		}
 	}
+
+	void sortPackets( uint8_t* data, size_t length ) {
+		fprintf( stderr, "TODO - sort TS packets into order %p : %u\n", data, length );
+	}
+
 private:
 	std::vector<uint8_t>		m_source;				///< All stored source data.
 	bool						m_decoded_header;		///< Flag set when metadata found and decoded.
