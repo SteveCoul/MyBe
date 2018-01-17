@@ -2,6 +2,8 @@
 
 #include "xlog.hpp"
 
+static unsigned int BUFFER_SIZE		=	256 * 188;
+
 int VideoDecoder::avioread_wrapper(void *opaque, uint8_t *buf, int buf_size ) {
 	VideoDecoder* THIS = (VideoDecoder*)opaque;
 	return THIS->avioread( buf, buf_size );
@@ -64,7 +66,7 @@ int VideoDecoder::init() {
 		return -1;
 	}
 
-	m_io_context_buffer = (uint8_t*)av_malloc( 4096*188 );
+	m_io_context_buffer = (uint8_t*)av_malloc( BUFFER_SIZE );
 	if ( m_io_context_buffer == NULL ) {
 		XLOG_ERROR( "Failed to alloc context buffer" );
 		return -1;
@@ -76,7 +78,7 @@ int VideoDecoder::init() {
 		return -1;
 	}
 
-	m_io_context = avio_alloc_context( m_io_context_buffer, 4096*188, 0, this, &avioread_wrapper, NULL, NULL );
+	m_io_context = avio_alloc_context( m_io_context_buffer, BUFFER_SIZE, 0, this, &avioread_wrapper, NULL, NULL );
 	if ( !m_io_context ) {
 		XLOG_ERROR( "Failed to allocate IO context" );
 		return -1;
