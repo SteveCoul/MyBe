@@ -197,11 +197,18 @@ int Process_Recode::writeOutputFile( unsigned int iframe_original_len, unsigned 
 		} else {
 			unsigned int written = 0;
 
+			if ( m_ts->sizePIDStream( 0 ) != 188 ) {
+				XLOG_WARNING("Be warned, only writing first frame of PAT stream because we only want one and we KNOW it's a single frame long atm");
+			}
+			if ( m_ts->sizePIDStream( m_pmt_pid ) != 188 ) {
+				XLOG_WARNING("Be warned, only writing first frame of PMT stream because we only want one and we KNOW it's a single frame long atm");
+			}
+
 			XLOG_INFO( "%u written - write PAT", written );
-			written+= m_ts->writePIDStream( ofd, 0 );
+			written+= m_ts->writePIDStream( ofd, 0, 0, 1 );	// See warning above.
 
 			XLOG_INFO( "%u written - write PMT", written );
-			written+= m_ts->writePIDStream( ofd, m_pmt_pid );
+			written+= m_ts->writePIDStream( ofd, m_pmt_pid, 0, 1 ); // See warning above
 
 			TSPacket* m = TSPacket::create( 8191, 0, header, len );
 
